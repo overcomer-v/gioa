@@ -1,0 +1,71 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  background-color: rgb(250, 250, 250);
+  color-scheme: light dark;
+  color: rgb(20, 20, 20);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input,
+textarea {
+  outline: none;
+}
+
+img {
+  background: rgb(50, 50, 50, 0.2);
+}
+
+.page-animation {
+  animation: fade 500ms ease-in-out;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.no-scrollbar ::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+header {
+  background-color: rgb(245, 245, 245);
+}
+
+/* .bg-primary {
+  color: black;
+  background-color: rgb(180,200,50);
+} */
+
+.neutral-bg{
+  background: rgb(40, 40, 40);;
+  color: white;
+}
+
+.bg-primary-dark {
+  color: white;
+  background-color: rgb(10, 10, 10);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translate(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0);
+  }
+}

@@ -1,0 +1,1 @@
+export const generalPagePadding = "px-10";
