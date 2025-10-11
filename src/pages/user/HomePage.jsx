@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { MainHeader } from "../../components/Header";
 import { UserNavBar } from "../../components/Navbar";
 import { useProducts } from "../../hooks/databaseManager/useProducts";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { generalPagePadding } from "../../utils/constants";
 import { SecondaryProductCard, UsersProductCard } from "../../components/Cards";
 import { Products } from "../admin/Products";
@@ -25,16 +25,16 @@ export function UserHomePage() {
 
   return (
     <main className="">
-      <div className="px-8 flex text-sm neutral-bg ">
-        <div className="flex items-center py-4 gap-2 mr-8 px-8">
-          <span>All Categories</span>
+      <div className="px-8 flex text-sm neutral-bg overflow-scroll">
+        <div className="flex items-center py-4 gap-2 mr-8 px-8 ">
+          <span className="text-nowrap">All Categories</span>
           <i className="fa fa-bars"></i>
         </div>
         {categories.map((category, index) => (
           <Link
             key={index}
             to={`/group-opener/category/${category.name}`}
-            className="py-4 px-4 hover:bg-neutral-700"
+            className="py-4 px-4 hover:bg-neutral-700 text-nowrap"
           >
             {category.name}
           </Link>
@@ -54,7 +54,7 @@ export function UserHomePage() {
   function HeroSection() {
     return (
       <section>
-        <div className="h-[450px] relative">
+        <div className="md:h-[450px] h-[300px] relative">
           <img
             className="h-full w-full object-cover absolute z-10 top-0 right-0 bottom-0 left-0"
             src="/images/pxfuel.jpg"
@@ -62,12 +62,12 @@ export function UserHomePage() {
           />
           <div className="  flex absolute z-20 top-0 right-0 left-0 bottom-0 bg-black bg-opacity-50">
             <div
-              className={` my-auto w-[50%] ${generalPagePadding} flex flex-col gap-4 text-white`}
+              className={` my-auto md:w-[50%] w-[80%] ${generalPagePadding} flex flex-col gap-4 text-white`}
             >
-              <h1 className="text-5xl font-bold leading-tight">
+              <h1 className="md:text-5xl text-2xl font-bold leading-tight">
                 Upgrade Your World with the Latest Tech
               </h1>
-              <span className="opacity-70">
+              <span className="opacity-70 text-xs md:text-base">
                 Discover premium electronics at prices you will love and a good
                 customer satisfaction
               </span>
@@ -173,7 +173,7 @@ function FeaturedProducts() {
           <Spinner size="text-4xl m-auto" />
         </div>
       ) : (
-        <div className="grid items-center gap-3 no-scrollbar py-3 grid-cols-[repeat(auto-fit,minmax(200px,1fr))] mt-8 w-full">
+        <div className="grid items-center gap-3 no-scrollbar py-3  grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] mt-8 w-full">
           {products.map((item, index) => (
             <UsersProductCard
               key={index}
