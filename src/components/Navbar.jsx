@@ -56,10 +56,7 @@ export function AdminNavBar({ openAdminNavbar, setOpenAdminNavbar }) {
           iconData={"fa-comments"}
           to={"/admin-reports"}
         ></NavItems>
-        <Link
-         to={"/"}
-          className="flex items-center gap-2 mt-8 ml-4 text-sm"
-        >
+        <Link to={"/"} className="flex items-center gap-2 mt-8 ml-4 text-sm">
           <i className="fa fa-arrow-left "></i>
           <span>Bact to HomePage</span>
         </Link>
@@ -99,30 +96,35 @@ export function AdminNavBar({ openAdminNavbar, setOpenAdminNavbar }) {
   }
 }
 
-export function UserNavBar({ setShowBrands,showBrands }) {
+export function UserNavBar({ setShowBrands, showBrands }) {
   return (
-    <nav className={ `${generalPagePadding} py-4 gap-6  bg-primary flex items-center overflow-auto sticky top-0 z-50`}>
+    <nav
+      className={`${generalPagePadding} py-4 gap-6  bg-primary flex items-center overflow-auto sticky top-0 z-50`}
+    >
       <NavItems label={"Home"} iconData={"fa-home"} to={"/"}></NavItems>
       <NavItems
         label={"Contact Us"}
         iconData={"fa-phone"}
-        to={"contacts"}
+        to={"/b"}
       ></NavItems>
       <NavItems
         label={"About Us"}
         iconData={"fa-bullseye"}
-        to={"about"}
+        to={"/a"}
       ></NavItems>
-      <div className={`${showBrands && "border-[2px] border-neutral-100 rounded-full"}`}>
-      <NavItems
-        label={"Shop by Brands"}
-        iconData={"fa-shop"}
-        isBrands={true}
-        onClick={() => {
-          setShowBrands((e) => !e);
-        }}
-      ></NavItems>
-        </div>
+      <div
+        className={`${showBrands && "border-[2px] border-neutral-100 rounded-xl"}`}
+      >
+        <NavItems
+          label={"Shop by Brands"}
+          iconData={"fa-shop"}
+          isBrands={true}
+          onClick={() => {
+            setShowBrands((e) => !e);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        ></NavItems>
+      </div>
       <NavItems
         label={"Categories"}
         iconData={"fa-sort"}
@@ -137,7 +139,9 @@ export function UserNavBar({ setShowBrands,showBrands }) {
         {({ isActive }) => (
           <div
             className={`flex text-white items-center gap-2 flex-shrink-0 flex-nowrap text-nowrap px-5 py-2 text-sm ${
-              isActive && !isBrands && "bg-neutral-100  !text-primary font-semibold scale-105"
+              isActive &&
+              !isBrands &&
+              "bg-neutral-100  !text-primary font-semibold scale-105"
             } hover:bg-neutral-100 hover:text-primary rounded-lg`}
           >
             <i className={`fa ${iconData}`}></i>

@@ -13,39 +13,43 @@ export function LoginPage() {
     password: "",
   });
 
-  useEffect(()=>{
-    document.addEventListener("click",(e)=>{
-
+  useEffect(() => {
+    document.addEventListener("click", (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") {
         setErrorMessage(null);
       }
     });
 
-    return ()=>{
-      document.removeEventListener("click",(e)=>{
-      if (e.target === "input") {
-        setErrorMessage(null);
-      }
-    });
-    }
-  },[]);
+    return () => {
+      document.removeEventListener("click", (e) => {
+        if (e.target === "input") {
+          setErrorMessage(null);
+        }
+      });
+    };
+  }, []);
 
   useEffect(() => {
-    console.log(user,role);
+    console.log(user, role);
     if (!isAuthloading && user && role) {
       if (role != "admin") {
-        console.log("/user-board");
+        navigate("/")
       } else {
         navigate("/admin-board");
       }
     }
-  }, [isAuthloading, loading, user, role]);
+  }, [isAuthloading, loading, user, role, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     if (logInDetails) {
       try {
-        await login(logInDetails);
+        await login({
+          ...logInDetails,
+          onSuccess: () => {
+            navigate(0);
+          },
+        });
       } catch (error) {
         setErrorMessage(error.message);
       }
@@ -66,10 +70,12 @@ export function LoginPage() {
           </span>
         </div>
 
-       { errorMessage && <div className="flex ease-in-out transition-all duration-500 translate-y-2 items-center gap-2 rounded-md px-3 py-3 mb-4 bg-red-300">
-          <i className="fas fa-exclamation-circle"></i>
-          <span>{errorMessage}</span>
-        </div>}
+        {errorMessage && (
+          <div className="flex ease-in-out transition-all duration-500 translate-y-2 items-center gap-2 rounded-md px-3 py-3 mb-4 bg-red-300">
+            <i className="fas fa-exclamation-circle"></i>
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         <label htmlFor="email">Email</label>
         <input
@@ -97,9 +103,9 @@ export function LoginPage() {
         />
         <button
           type="submit"
-          className="bg-primary py-3 rounded-md flex gap-4 items-center justify-center"
+          className="bg-primary text-white py-3 rounded-md flex gap-4 items-center justify-center"
         >
-          <p>SignUp</p>
+          <p>Sign In</p>
           {loading && <p className=" fa fa-spin fa-spinner"></p>}
         </button>
         <Link className="text-purple-700 mt-4" to={"/signup"}>

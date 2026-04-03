@@ -257,6 +257,7 @@ function MoreToLike({ products = [] }) {
         {products.slice(0, 5).map((item, index) => (
           <div className="flex-shrink-0 w-[500px]">
             <SecondaryProductCard
+            id={item.id}
               key={index}
               label={item.name}
               imageSrc={item.image_src}

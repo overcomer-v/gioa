@@ -8,8 +8,12 @@ export function AuthContextProvider({ children }) {
   const [isAuthloading, setLoading] = useState();
   const [role, setRole] = useState();
 
-  async function getRole() {
-    const { data, error } = await supabase.from("roles").select("role");
+  async function getRole(id) {
+    const { data, error } = await supabase
+      .from("roles")
+      .select("role")
+      .eq("id", id)
+      .maybeSingle();
     if (error) {
       console.log(error);
     }
@@ -17,24 +21,23 @@ export function AuthContextProvider({ children }) {
   }
 
   useEffect(() => {
-    const handleSessionFetch = (user) => {
+    const handleSessionFetch = (userInfo) => {
       setLoading(true);
-      setUser(user);
-      getRole().then((result) => {
-       if (result) {
-         setRole(result[0]?.role);
-        console.log(result[0]?.role);
-        setLoading(false);
-       }
+      setUser(userInfo);
+      getRole(userInfo.id).then((result) => {
+        if (result) {
+          setRole(result?.role);
+          console.log(result?.role);
+          setLoading(false);
+        }
       });
     };
 
-    supabase.auth.getUser().then((user)=>{
-      if (user) {
-        handleSessionFetch(user);
+    supabase.auth.getUser().then(({data}) => {
+      if (data.user) {
+        handleSessionFetch(data.user);
       }
     });
-    
 
     const { data: authSubscriber } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -44,7 +47,7 @@ export function AuthContextProvider({ children }) {
           setUser(null);
           setLoading(false);
         }
-      }
+      },
     );
 
     return () => {

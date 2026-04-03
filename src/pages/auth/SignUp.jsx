@@ -15,7 +15,8 @@ export function SignUpPage() {
     password: "",
   });
 
-  const { user, isAuthloading, role } = useAuth();
+  const {  user, isAuthloading, role } = useAuth();
+
 
   useEffect(() => {
     document.addEventListener("click", (e) => {
@@ -41,14 +42,15 @@ export function SignUpPage() {
         navigate("/admin-board");
       }
     }
-  }, [isAuthloading]);
+  }, [isAuthloading,user,navigate,role]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    console.log(signUpDetails);
     if (signUpDetails) {
      try {
-       await signUp(signUpDetails);
+       await signUp({...signUpDetails,onSuccess:()=>{
+        navigate(0);
+       }});
      } catch (error) {
       setErrorMessage(error.message);
      }
@@ -116,9 +118,9 @@ export function SignUpPage() {
         />
         <button
           type="submit"
-          className="bg-primary py-3 rounded-md flex gap-4 items-center justify-center"
+          className="bg-primary py-3 rounded-md flex gap-4 items-center justify-center text-white"
         >
-          <p>SignUp</p>
+          <p>Sign Up</p>
           {loading && <p className=" fa fa-spin fa-spinner"></p>}
         </button>
 

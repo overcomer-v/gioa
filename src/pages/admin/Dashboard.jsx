@@ -4,11 +4,11 @@ import { useProducts } from "../../hooks/databaseManager/useProducts";
 
 export function AdminDashboard() {
   
-  const {fetchAllUserProfiles,users} = useProfile();
+  const {userProfiles} = useProfile();
   const {fetchProducts,products} = useProducts();
 
   useEffect(()=>{
-    fetchAllUserProfiles();
+    
     fetchProducts(1,1000);
   },[]);
 
@@ -21,7 +21,7 @@ export function AdminDashboard() {
       </div>
       <div className="grid grid-cols-2 md:flex mt-8 gap-3">
         <BoardInfoCard
-          title={users  ? users.length : "..."}
+          title={userProfiles  ? userProfiles.length : "..."}
           subtitle={"Total users"}
           icondata={"fa-people-group"}
         ></BoardInfoCard>

@@ -10,11 +10,11 @@ export function UsersProductCard({
   onClick,
 }) {
   return (
-    <Link onClick={
-      onClick
-    } 
-    to={`/product-details/${id}`}
-    className={`flex flex-col gap-1 justify-between h-full p-4 py-5 cursor-pointer shadow-lg bg-white rounded-md relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}>
+    <Link
+      onClick={onClick}
+      to={`/product-details/${id}`}
+      className={`flex flex-col gap-1 justify-between h-full p-4 py-5 cursor-pointer shadow-lg bg-white rounded-md relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}
+    >
       <div className="flex gap-2 flex-col">
         <img
           className="w-[90%] mx-auto aspect-[16/15] mb-2 object-cover rounded-lg"
@@ -22,7 +22,9 @@ export function UsersProductCard({
           alt=""
         />
         <h2 className="text-xs text-primary ">{category}</h2>
-        <p className="font-semibold text-base line-clamp-2 text-primary">{label}</p>
+        <p className="font-semibold text-base line-clamp-2 text-primary">
+          {label}
+        </p>
         <div className="flex items-center gap-2 ">
           <span className="opacity-60 text-sm">Brand :</span>
           <span className=" text-sm">{brand}</span>
@@ -38,6 +40,7 @@ export function UsersProductCard({
 }
 
 export function SecondaryProductCard({
+  id,
   imageSrc,
   label,
   category,
@@ -45,25 +48,31 @@ export function SecondaryProductCard({
   onClick,
 }) {
   return (
-    <div onClick={onClick} className=" flex h-[270px] px-12 py-10 gap-4 group items-center rounded-lg overflow-hidden border-2">
-      <div className="flex flex-col ">
-        <p className=" text-primary text-sm">{category}</p>
-        <h2 className="text-2xl font-semibold mb-1 line-clamp-2">{label}</h2>
-        <span className="">{price}</span>
-        <div className="flex items-center gap-2 mt-6">
-                   <i className="fa fa-shopping-cart bg-primary text-white h-10 w-10 flex items-center justify-center rounded-full"></i>
+    <Link to={`/product-details/${id}`}>
+      {" "}
+      <div
+        onClick={onClick}
+        className=" flex h-[270px] px-12 py-10 gap-4 group items-center rounded-lg overflow-hidden border-2"
+      >
+        <div className="flex flex-col ">
+          <p className=" text-primary text-sm">{category}</p>
+          <h2 className="text-2xl font-semibold mb-1 line-clamp-2">{label}</h2>
+          <span className="">{price}</span>
+          <div className="flex items-center gap-2 mt-6">
+            <i className="fa fa-shopping-cart bg-primary text-white h-10 w-10 flex items-center justify-center rounded-full"></i>
 
-          <button className="bg-primary font-bold text-white py-3 px-4 w-fit rounded-full text-sm ">
-            Buy Now
-          </button>
+            <button className="bg-primary font-bold text-white py-3 px-4 w-fit rounded-full text-sm ">
+              Buy Now
+            </button>
+          </div>
         </div>
+        <img
+          className=" h-40 w-40 border-2 group-hover:scale-110 border-white ease-in-out duration-200 transition-transform  object-cover rounded-full "
+          src={imageSrc}
+          alt=""
+        />
       </div>
-      <img
-        className=" h-40 w-40 border-2 group-hover:scale-110 border-white ease-in-out duration-200 transition-transform  object-cover rounded-full "
-        src={imageSrc}
-        alt=""
-      />
-    </div>
+    </Link>
   );
 }
 

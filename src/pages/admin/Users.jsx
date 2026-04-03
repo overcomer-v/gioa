@@ -1,16 +1,12 @@
-import { useEffect, useState } from "react";
 import { useProfile } from "../../hooks/databaseManager/useProfile";
 import { Spinner } from "../../components/Spinners";
 
 export function Users() {
-  const { fetchAllUserProfiles, users } = useProfile();
+  const { userProfiles } = useProfile();
 
-  useEffect(() => {
-    fetchAllUserProfiles();
-  }, []);
-
+ 
   return (
-    <div className=" flex flex-col gap-4 px-4 page-animation">
+    <div className=" relative flex flex-col gap-4 px-4 page-animation">
       <div className="flex justify-between items-center mb-4">
         <h1 className="flex items-center gap-2">
           <i className="fa fa-user text-admin_primary"></i>
@@ -19,10 +15,10 @@ export function Users() {
       
       </div>
      <div className="overflow-x-auto w-full">
-       {users.length != 0 ? (
-        <UsersTable users={users} />
+       {userProfiles.length != 0 ? (
+        <UsersTable users={userProfiles} />
       ) : (
-        <div className=" m-auto mt-8">
+        <div className=" absolute top-40 right-1/2">
           {" "}
           <Spinner></Spinner>
         </div>

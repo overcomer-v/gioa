@@ -1,28 +1,58 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../supabase";
 
 export function useProfile() {
+  const [userProfile, setUserProfile] = useState();
+  const [userProfiles,setUserProfiles] = useState([]);
+  const { user } = useAuth();
 
-      const [users, setUsers] = useState([]);
+  useEffect(() => {
 
-
-    async function fetchAllUserProfiles() {
-        try {
-            
-        const {data,error} = await supabase.from("profiles").select("*");
+     async function fetchAllUserProfiles() {
+    
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
 
         if (error) {
-            throw error;
-        }else{
-            setUsers(data);
+          throw error;
+        } else {
+          setUserProfiles(data);
         }
-
-        } catch (error) {
-            console.error(error);
-        }
-
+      } catch (error) {
+        console.error(error);
+      }
     }
 
-    return {fetchAllUserProfiles,users};
+    async function fetchUserProfile() {
+      
+      if (!user) {
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          throw error;
+        } else {
+          setUserProfile(data);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchUserProfile();
+    fetchAllUserProfiles();
+  }, [user]);
+
+
+
+  return { userProfile,userProfiles };
 }

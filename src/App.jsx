@@ -5,6 +5,7 @@ import {
   Outlet,
   Route,
   Routes,
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 import { SignUpPage } from "./pages/auth/SignUp";
@@ -24,9 +25,11 @@ import { GroupListOpener } from "./pages/user/GroupListOpener";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 import { ProductDetailsView } from "./pages/user/ProductDetailsView";
 function App() {
+
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/login" element={<LoginPage></LoginPage>}></Route>
         <Route path="/signup" element={<SignUpPage></SignUpPage>}></Route>{" "}
         <Route element={<AdminRoutesParent />}>
@@ -66,7 +69,10 @@ function App() {
 
 function UserRoutesParent() {
   const [showBrandsView, setShowBrandsView] = useState();
-
+  const loaction = useLocation();
+useEffect(()=>{
+window.scrollTo({top:0,behavior:"smooth"});
+},[loaction]);
   return (
     <div className="relative">
       <MainHeader></MainHeader>
@@ -113,7 +119,9 @@ function AdminRoutesParent() {
 
       <div className="w-full md:ml-[250px]">
         <AdminHeader onAdminNavBarOpen={setOpenAdminNavBar}></AdminHeader>
-        <Outlet></Outlet>
+        <div className="md:ml-16 mt-8">
+          <Outlet></Outlet>
+        </div>
       </div>
     </div>
   );

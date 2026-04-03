@@ -24,30 +24,40 @@ export function useAuthManager() {
   //     }
   // }
 
-  async function signUp({ name, email, password }) {
+  async function signUp({ name, email, password, onSuccess }) {
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data:{user}, error } = await supabase.auth.signUp({ email, password });
 
       if (error) {
         throw error;
       } else {
         console.log("SignUp successfull");
-        console.log(data.user);
+        console.log(user);
         const { error: insertError } = await supabase
           .from("profiles")
-          .insert([{ id: data.user.id, name: name, email: email }]);
+          .insert([{ user_id: user.id, name: name, email: email }]);
 
-         const { error: rolesError } = await supabase
-          .from("roles")
-          .insert([{ id: data.user.id, role: "user" }]);
-
-
-        if (insertError || rolesError) {
-          console.log(insertError || rolesError);
-          throw insertError || rolesError;
+        if (insertError) {
+          console.log(insertError);
+          throw insertError;
         }
+
+        const { error: rolesError } = await supabase.functions.invoke(
+          "register-role",
+          {
+            body: { name: "Functions" },
+          },
+        );
+
+        if (rolesError) {
+          console.log(rolesError);
+          throw rolesError;
+        }
+              onSuccess();
+
       }
+
     } catch (error) {
       console.log("Error occured :", error);
       setError(error);
@@ -57,7 +67,7 @@ export function useAuthManager() {
     }
   }
 
-  async function login({email, password}) {
+  async function login({ email, password , onSuccess}) {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -69,6 +79,8 @@ export function useAuthManager() {
       } else {
         console.log("SignUp successfull");
       }
+
+      onSuccess();
     } catch (error) {
       console.log("Error occured :", error);
       throw error;

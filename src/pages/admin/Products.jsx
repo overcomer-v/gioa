@@ -11,18 +11,18 @@ export function Products() {
     products,
     deleteProduct,
     fetchCategories,
-    productCount
+    productCount,
   } = useProducts();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const [page,setPage] = useState(1);
+  const [page, setPage] = useState(1);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [itemDetails, setItemsDetails] = useState({ id: "", image_url: "" });
-  const limit = 15
-const maxPage = Math.ceil(productCount/limit);
+  const limit = 15;
+  const maxPage = Math.ceil(productCount / limit);
 
   useEffect(() => {
-    fetchProducts(page,limit);
+    fetchProducts(page, limit);
     fetchCategories().then((category) => {
       setCategories(category);
     });
@@ -33,7 +33,7 @@ const maxPage = Math.ceil(productCount/limit);
   }, [products]);
 
   return (
-    <div className="px-4">
+    <div className="">
       {openDeleteDialog && (
         <DeleteWarningDaialog
           onCancel={() => {
@@ -91,7 +91,7 @@ const maxPage = Math.ceil(productCount/limit);
           <span className="opacity-70">Add Product</span>
         </Link>
       </div>
-      {products.length != 0 || !isProductLoading || products ? (
+      {products?.length > 0 || !isProductLoading ? (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-x-3 gap-y-8">
           {products.map((product, index) => (
             <ProductsCard product={product} key={index}></ProductsCard>
@@ -102,11 +102,19 @@ const maxPage = Math.ceil(productCount/limit);
           <Spinner></Spinner>
         </div>
       )}
-      <PageNavigator pageNo={page} maxPageNo={maxPage} onPageChange={(e)=>{
-        setPage(e);
-      }} />
+      {(products?.length > 0 ||
+        !isProductLoading )&& (
+        <div className="my-16">
+            <PageNavigator
+            pageNo={page}
+            maxPageNo={maxPage}
+            onPageChange={(e) => {
+              setPage(e);
+            }}
+          />
+        </div>
+        )}
     </div>
-
   );
 
   function ProductsCard({ product }) {
