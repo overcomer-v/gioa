@@ -13,10 +13,11 @@ export function ProductEditor() {
   const [productInfo, setProductInfo] = useState({
     name: "",
     description: "",
+    specifications: {},
     category: "",
     price: "",
     amount_in_stock: "",
-    brand: ""
+    brand: "",
   });
 
   useEffect(() => {
@@ -37,7 +38,8 @@ export function ProductEditor() {
           category: res.category,
           price: res.price,
           amount_in_stock: res.amount_in_stock,
-           brand:res.brand
+          brand: res.brand,
+          specifications:res.specifications ?? {},
         });
         setProductImage(res.image_src);
         console.log(res.image_src);
@@ -45,6 +47,23 @@ export function ProductEditor() {
     }
   }, []);
 
+  const handleKeyDown = (e) => {
+    const text = productInfo.spec;
+    // When Enter is pressed, add a new bullet automatically
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const start = e.target.selectionStart;
+      const newText = text.slice(0, start) + "\n• " + text.slice(start);
+      setProductInfo((e) => {
+        return { ...e, spec: newText };
+      });
+
+      // Move cursor after new bullet
+      setTimeout(() => {
+        e.target.selectionStart = e.target.selectionEnd = start + 3;
+      }, 0);
+    }
+  };
   function getImage() {
     if (productId) {
       if (updateImage) {
@@ -130,6 +149,13 @@ export function ProductEditor() {
             className="py-2 px-3 w-full mt-3 mb-8 rounded-sm border-[1px] h-20 bg-transparent border-neutral-400"
           />
 
+          <label htmlFor="spec" className="inline-block mt-8">
+            Product Specifications
+          </label>
+          <SpecificationsUi
+            productSpecifications={productInfo.specifications}
+            setProductInfo={setProductInfo}
+          />
           <label htmlFor="category">Category</label>
           <select
             value={productInfo.category}
@@ -153,7 +179,7 @@ export function ProductEditor() {
             <option value="Laptops & Phones">Laptop & Phones</option>
           </select>
 
-           <label htmlFor="brand" className="inline-block mt-8">
+          <label htmlFor="brand" className="inline-block mt-8">
             Product Brand
           </label>
           <input
@@ -224,7 +250,7 @@ export function ProductEditor() {
             }}
             className=" mt-6 py-3 px-3 flex items-center gap-2 rounded-lg text-sm bg-primary-dark float-right"
           >
-            <p>Add Product</p>
+            <p>{productId ? "Update Product":"Add Product"}</p>
             <i
               className={`fa ${
                 isProductLoading ? "fa-spinner fa-spin" : "fa-check"
@@ -275,3 +301,88 @@ export function ProductEditor() {
     );
   }
 }
+
+
+function SpecificationsUi({ productSpecifications = {}, setProductInfo }) {
+
+    
+    const [newSpec, setNewSpec] = useState({ component: "", specifications: "" });
+
+    useEffect(()=>{
+      console.log(productSpecifications);
+    },[productSpecifications]);
+
+    const addSpec = (e) => {
+      e.preventDefault();
+      if (!newSpec.component || !newSpec.specifications) return;
+
+      setProductInfo((prev) => ({
+        ...prev,
+        specifications: {
+          ...(prev.specifications || {}),
+          [newSpec.component]: newSpec.specifications,
+        },
+      }));
+      // Reset input
+      setNewSpec({ component: "", specifications: "" });
+    };
+
+    const removeSpec = (keyToRemove) => {
+  setProductInfo((prev) => {
+    const updatedSpecs = { ...prev.specifications };
+    delete updatedSpecs[keyToRemove]; // remove the key
+    return { ...prev, specifications: updatedSpecs };
+  });
+};
+
+
+    return (
+      <div className="my-4">
+        {/* Display current specifications */}
+        {Object.keys(productSpecifications).length > 0 && (
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {Object.entries(productSpecifications).map(([key, value]) => (
+              <div key={key} className="border p-2 rounded flex items-center text-nowrap text-ellipsis overflow-hidden"> <i onClick={()=>{removeSpec(key)}} className="fa fa-times mr-3 opacity-80"></i>
+                <strong >{key}</strong> : {value}
+               
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <h2>Components</h2>
+            <input
+              type="text"
+              value={newSpec.component}
+              onChange={(e) => {
+                setNewSpec((prev) => {
+                  return { ...prev, component: e.target.value };
+                });
+              }}
+              className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
+            />
+          </div>
+          <div>
+            <h2>Specifications</h2>
+            <input
+              value={newSpec.specifications}
+              onChange={(e) => {
+                setNewSpec((prev) => {
+                  return { ...prev, specifications: e.target.value };
+                });
+              }}
+              type="text"
+              className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
+            />
+          </div>
+        </div>
+        <button
+          onClick={addSpec}
+          className="mt-6 py-3 px-3 flex items-center gap-2 rounded-lg text-sm bg-primary-dark float-right"
+        >
+          Add Specification
+        </button>
+      </div>
+    );
+  }

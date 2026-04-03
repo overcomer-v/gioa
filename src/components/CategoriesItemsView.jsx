@@ -3,23 +3,30 @@ import { useProducts } from "../hooks/databaseManager/useProducts";
 import { Spinner } from "./Spinners";
 import { UsersProductCard } from "./Cards";
 
-export function CategoriesItemsView({ category }) {
+export function CategoriesItemsView({ category,exclusion=[] }) {
     const {fetchGroupItems} = useProducts();
       const [categoryItems, setCategoryItems] = useState();
   
       useEffect(() => {
        fetchGroupItems("category",category).then((items) => {
+        
+        if (exclusion.length !== 0) {
+          const filtereditem = items.filter((i)=> !exclusion.includes(i.id));
+          setCategoryItems(filtereditem);
+          return;
+        }
           setCategoryItems(items);
         });
       }, [category]);
   
       return (
       <div>
-        {categoryItems ?   <div className="flex flex-wrap gap-3 no-scrollbar  py-3  w-full">
+        {categoryItems ?   <div className="flex gap-3 overflow-scroll no-scrollbar py-3 pb-6 w-full">
           {categoryItems &&
             categoryItems.map((item, index) => (
-              <div className="w-[220px]">
+              <div className="w-[220px] flex-shrink-0">
                 <UsersProductCard
+                id={item.id}
                   key={index}
                   label={item.name}
                   imageSrc={item.image_src}

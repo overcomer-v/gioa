@@ -1,4 +1,5 @@
 import {
+  BrowserRouter,
   HashRouter,
   Navigate,
   Outlet,
@@ -24,7 +25,7 @@ import { AdminDashboard } from "./pages/admin/Dashboard";
 import { ProductDetailsView } from "./pages/user/ProductDetailsView";
 function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage></LoginPage>}></Route>
         <Route path="/signup" element={<SignUpPage></SignUpPage>}></Route>{" "}
@@ -46,7 +47,10 @@ function App() {
         </Route>
         <Route element={<UserRoutesParent />}>
           <Route path="/" element={<UserHomePage />}></Route>
-          <Route path="/product-details/:productId?" element={<ProductDetailsView />}></Route>
+          <Route
+            path="/product-details/:productId?"
+            element={<ProductDetailsView />}
+          ></Route>
 
           <Route
             path="/group-opener/:type/:typeItem"
@@ -56,7 +60,7 @@ function App() {
           <Route path="/categories" element={<CategoriesViewer />}></Route>
         </Route>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 
@@ -64,7 +68,7 @@ function UserRoutesParent() {
   const [showBrandsView, setShowBrandsView] = useState();
 
   return (
-    <div>
+    <div className="relative">
       <MainHeader></MainHeader>
       <UserNavBar
         setShowBrands={setShowBrandsView}
@@ -99,7 +103,7 @@ function AdminRoutesParent() {
   ) : role != "admin" ? (
     <Navigate to={"/"}></Navigate>
   ) : (
-    <div className="flex relative items-start w-full ">
+    <div className="flex relative items-start w-full">
       <div className="">
         <AdminNavBar
           openAdminNavbar={openAdminNavbar}

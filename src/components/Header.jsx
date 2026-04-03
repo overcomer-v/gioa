@@ -28,16 +28,16 @@ export function MainHeader() {
   return (
     <header className={`flex items-center ${generalPagePadding} py-5 justify-between w-full neutral-bg`}>
       <div className="flex items-center gap-2">
-        <i className="fa fa-bullseye text-base"></i>{" "}
-        <h2 className="text-xl font-semibold">Gioa</h2>
+        <i className="fa fa-laptop text-white  bg-[rgb(171,192,34)] px-2 py-1 rounded-md text-xl"></i>{" "}
+        <h2 className="text-2xl font-bold text-primary">GIOA</h2>
       </div>
-      <div className="w-[50%] h-10 flex bg-neutral-100 items-center justify-between rounded-full overflow-hidden">
+      <div className="w-[40%] h-12 flex items-center justify-between rounded-xl overflow-hidden">
         <input
-          className="bg-transparent px-4 py-1 text-sm"
+          className="bg-transparent px-8 border-neutral-200 border-2 rounded-l-xl h-full w-full py-1 text-sm placeholder:text-neutral-600"
           type="text"
           placeholder="Search Products here"
         />
-        <i className="fa fa-search bg-primary h-full w-10 justify-center flex items-center"></i>
+        <i className="fa fa-search bg-primary h-full w-12 justify-center text-white flex items-center"></i>
       </div>
       <div className="flex items-center gap-4">
         {user && role === "user" ? (
@@ -46,17 +46,17 @@ export function MainHeader() {
             <i className="fa fa-user-circle"></i>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ">
             {" "}
-            <Link  to={"/login"} className="py-2 px-4 rounded-full border-2 text-sm border-neutral-600 hover:bg-neutral-100 hover:text-neutral-800">
+            <Link  to={"/login"} className="py-2 px-4 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white">
               Login
             </Link>
-            <Link to={"/signup"} className="py-2 px-4 rounded-full border-2 text-sm border-neutral-600 hover:bg-neutral-100 hover:text-neutral-800">
+            <Link to={"/signup"} className="py-2 px-4 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white">
               SignUp
             </Link>
           </div>
         )}
-        <i className="fa fa-shopping-cart border-l-2 border-neutral-500 pl-4"></i>
+        <i className="fa fa-shopping-cart border-l-2 border-neutral-500 pl-4 text-[rgb(171,192,34)] "></i>
       </div>
     </header>
   );

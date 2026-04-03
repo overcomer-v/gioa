@@ -10,13 +10,16 @@ export function GroupListOpener() {
   const { type, typeItem } = useParams();
   const [itemsList, setItemsList] = useState();
   const [page, setPage] = useState();
+  const [loading,setLoading] = useState(true);
   const { fetchGroupItems, productCount } = useProducts();
   const limit = 15;
   const maxPageNo = Math.ceil(productCount / limit);
 
   useEffect(() => {
+    setLoading(true);
     fetchGroupItems(type, typeItem, page, limit).then((results) => {
       setItemsList(results);
+      setLoading(false);
       console.log(results);
     });
   }, [page, typeItem]);
@@ -28,42 +31,53 @@ export function GroupListOpener() {
   }
 
   return (
-    <div>
-      <div className={`w-full neutral-bg ${generalPagePadding}`}>
-        <h1 className="text-2xl text-primary font-bold py-4">{`${capitalizeFirstLetter(
-          type
-        )} > ${typeItem}`}</h1>
+    <div className={`${generalPagePadding}`}>
+      <div
+        className={`w-full neutral-bg  flex items-center py-4 gap-3 mt-12 border px-4`}
+      >
+        <i
+          className="fa fa-chevron-left text-lg text-primary cursor-pointer py-1 px-3 hover:text-white rounded-md hover:bg-primary"
+          onClick={() => {
+            window.history.back();
+          }}
+        ></i>
+        <h1 className="text-2xl text-primary font-bold pb-1">{`${capitalizeFirstLetter(typeItem)}`}</h1>
       </div>
-     {
-      !itemsList ? (
+      {!itemsList || loading? (
         <div className="flex h-screen w-full">
-          <Spinner size="text-5xl opacity-60 m-auto"/>
+          <Spinner size="text-3xl opacity-60 top-[50vh] absolute left-1/2" />
         </div>
-      ):(
-         <><div
-              className={`flex flex-wrap gap-3 no-scrollbar mt-6 py-3  w-full ${generalPagePadding}`}
-            >
-              {itemsList &&
-                itemsList.map((item, index) => (
-                  <div className="w-[220px]">
-                    <UsersProductCard
-                      key={index}
-                      label={item.name}
-                      imageSrc={item.image_src}
-                      price={`₦${item.price}`}
-                      brand={item.brand}
-                      category={item.category} />
-                  </div>
-                ))}
-            </div><PageNavigator
+      ) : (
+        <>
+          <div
+            className={`flex flex-wrap gap-3 no-scrollbar mt-6 py-3  w-full `}
+          >
+            {itemsList &&
+              itemsList.map((item, index) => (
+                <div className="w-[220px]">
+                  <UsersProductCard
+                    id={item.id}
+                    key={index}
+                    label={item.name}
+                    imageSrc={item.image_src}
+                    price={`₦${item.price}`}
+                    brand={item.brand}
+                    category={item.category}
+                  />
+                </div>
+              ))}
+          </div>
+          <div className="mt-12">
+            <PageNavigator
               pageNo={page}
               maxPageNo={maxPageNo}
               onPageChange={(pageNo) => {
                 setPage(pageNo);
-              } }
-            ></PageNavigator></>
-      )
-     }
+              }}
+            ></PageNavigator>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { use, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "../supabase";
+import { generalPagePadding } from "../utils/constants";
 
 export function AdminNavBar({ openAdminNavbar, setOpenAdminNavbar }) {
   const navRef = useRef();
@@ -98,9 +99,9 @@ export function AdminNavBar({ openAdminNavbar, setOpenAdminNavbar }) {
   }
 }
 
-export function UserNavBar({ setShowBrands }) {
+export function UserNavBar({ setShowBrands,showBrands }) {
   return (
-    <nav className=" py-2 gap-6 px-8 bg-primary flex items-center overflow-auto">
+    <nav className={ `${generalPagePadding} py-4 gap-6  bg-primary flex items-center overflow-auto sticky top-0 z-50`}>
       <NavItems label={"Home"} iconData={"fa-home"} to={"/"}></NavItems>
       <NavItems
         label={"Contact Us"}
@@ -112,6 +113,7 @@ export function UserNavBar({ setShowBrands }) {
         iconData={"fa-bullseye"}
         to={"about"}
       ></NavItems>
+      <div className={`${showBrands && "border-[2px] border-neutral-100 rounded-full"}`}>
       <NavItems
         label={"Shop by Brands"}
         iconData={"fa-shop"}
@@ -120,6 +122,7 @@ export function UserNavBar({ setShowBrands }) {
           setShowBrands((e) => !e);
         }}
       ></NavItems>
+        </div>
       <NavItems
         label={"Categories"}
         iconData={"fa-sort"}
@@ -133,9 +136,9 @@ export function UserNavBar({ setShowBrands }) {
       <NavLink to={to} onClick={onClick}>
         {({ isActive }) => (
           <div
-            className={`flex items-center gap-2 flex-shrink-0 flex-nowrap text-nowrap px-4 py-2 text-sm ${
-              isActive && !isBrands && "bg-neutral-800 text-primary"
-            } hover:bg-neutral-800 hover:text-primary rounded-full`}
+            className={`flex text-white items-center gap-2 flex-shrink-0 flex-nowrap text-nowrap px-5 py-2 text-sm ${
+              isActive && !isBrands && "bg-neutral-100  !text-primary font-semibold scale-105"
+            } hover:bg-neutral-100 hover:text-primary rounded-lg`}
           >
             <i className={`fa ${iconData}`}></i>
             <span className="">{label}</span>

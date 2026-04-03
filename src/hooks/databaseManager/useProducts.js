@@ -8,6 +8,8 @@ export function useProducts() {
 
   const tableName = "products";
   const storageName = "product_images";
+
+  
   async function uploadProduct(productInfo, productImage) {
     const filePath = `${Date.now()}-${productImage.name}`;
     if (productImage && productInfo) {
@@ -202,6 +204,8 @@ export function useProducts() {
       setIsProductLoading(false);
     }
   }
+
+ 
 
   async function updateProductInfo(productId, product) {
     const { error } = await supabase

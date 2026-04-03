@@ -49,9 +49,13 @@ header {
 } */
 
 .neutral-bg{
-  background: rgb(40, 40, 40);;
-  color: white;
+  background: white;
+  color: rgb(20, 20, 20);
 }
+
+/* .bg-primary{
+  background: rgb(50, 200, 130);
+} */
 
 .bg-primary-dark {
   color: white;
