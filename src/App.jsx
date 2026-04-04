@@ -24,8 +24,8 @@ import { Footer } from "./components/Footer";
 import { GroupListOpener } from "./pages/user/GroupListOpener";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 import { ProductDetailsView } from "./pages/user/ProductDetailsView";
+import { FeaturedProducts } from "./pages/user/FeaturedProduct";
 function App() {
-
   return (
     <BrowserRouter>
       <Routes>
@@ -51,6 +51,11 @@ function App() {
         <Route element={<UserRoutesParent />}>
           <Route path="/" element={<UserHomePage />}></Route>
           <Route
+            path="/featured-products"
+            element={<FeaturedProducts />}
+          ></Route>
+
+          <Route
             path="/product-details/:productId?"
             element={<ProductDetailsView />}
           ></Route>
@@ -70,18 +75,20 @@ function App() {
 function UserRoutesParent() {
   const [showBrandsView, setShowBrandsView] = useState();
   const loaction = useLocation();
-useEffect(()=>{
-window.scrollTo({top:0,behavior:"smooth"});
-},[loaction]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [loaction]);
   return (
-    <div className="relative">
-      <MainHeader></MainHeader>
-      <UserNavBar
-        setShowBrands={setShowBrandsView}
-        showBrands={showBrandsView}
-      ></UserNavBar>
-      {showBrandsView && <BrandsView />}
-      <Outlet />
+    <div className="relative flex flex-col justify-between h-full min-h-screen">
+      <div>
+        <MainHeader></MainHeader>
+        <UserNavBar
+          setShowBrands={setShowBrandsView}
+          showBrands={showBrandsView}
+        ></UserNavBar>
+        {showBrandsView && <BrandsView />}
+        <Outlet />
+      </div>
       <Footer />
     </div>
   );

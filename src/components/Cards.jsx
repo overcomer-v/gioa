@@ -13,7 +13,7 @@ export function UsersProductCard({
     <Link
       onClick={onClick}
       to={`/product-details/${id}`}
-      className={`flex flex-col gap-1 justify-between h-full p-4 py-5 cursor-pointer shadow-lg bg-white rounded-md relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}
+      className={`flex flex-col gap-1 justify-between h-full px-3 md:px-4 py-5 cursor-pointer shadow-lg bg-white border rounded-md relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}
     >
       <div className="flex gap-2 flex-col">
         <img
@@ -21,7 +21,7 @@ export function UsersProductCard({
           src={imageSrc}
           alt=""
         />
-        <h2 className="text-xs text-primary ">{category}</h2>
+        <h2 className="text-xs text-primary hidden md:flex">{category}</h2>
         <p className="font-semibold text-base line-clamp-2 text-primary">
           {label}
         </p>
@@ -52,7 +52,7 @@ export function SecondaryProductCard({
       {" "}
       <div
         onClick={onClick}
-        className=" flex h-[270px] px-12 py-10 gap-4 group items-center rounded-lg overflow-hidden border-2"
+        className=" flex md:h-[270px] h-[240px] md:px-12 px-4 py-10 gap-4 group items-center rounded-2xl overflow-hidden border-2"
       >
         <div className="flex flex-col ">
           <p className=" text-primary text-sm">{category}</p>

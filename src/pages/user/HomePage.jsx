@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MainHeader } from "../../components/Header";
 import { UserNavBar } from "../../components/Navbar";
 import { useProducts } from "../../hooks/databaseManager/useProducts";
@@ -43,7 +43,7 @@ export function UserHomePage() {
       </div>
 
       <HeroSection></HeroSection>
-      <section className={` flex flex-col gap-16 ${generalPagePadding}`}>
+      <section className={` flex flex-col md:gap-16 ${generalPagePadding}`}>
         <TopCategoriesSection categories={categories} />
         <NewArrivals products={products} />
 
@@ -67,7 +67,7 @@ export function UserHomePage() {
             <div
               className={` my-auto md:w-[60%] w-[80%] ${generalPagePadding} flex flex-col gap-4 text-white`}
             >
-              <h1 className="md:text-7xl text-2xl font-bold leading-loose">
+              <h1 className="md:text-7xl text-2xl font-bold md:leading-loose">
                 Upgrade Your World with the Latest Tech
               </h1>
               <span className="opacity-70 text-xs md:text-base">
@@ -86,7 +86,7 @@ export function UserHomePage() {
 
   function TopCategoriesSection({ categories = [] }) {
     return (
-      <section className="mt-12 w-full">
+      <section className="md:mt-12 mt-6 w-full">
         <Subtitle label={"Top Categories"}></Subtitle>
 
         {categories.length === 0 ? (
@@ -94,18 +94,18 @@ export function UserHomePage() {
             <Spinner size="text-3xl m-auto" />
           </div>
         ) : (
-          <div className="flex items-center no-scrollbar py-3 overflow-scroll gap-4 mt-8 w-full">
+          <div className="md:flex grid grid-cols-2 items-center no-scrollbar py-3 overflow-scroll gap-4 md:mt-8 mt-4 w-full">
             {categories.map((item, index) => (
               <div
                 key={index}
-                className="flex shadow-md cursor-pointer flex-shrink-0 items-center gap-16 border rounded-xl py-5 px-5"
+                className="flex flex-col md:flex-row shadow-md cursor-pointer flex-shrink-0 items-center md:gap-16 gap-4 border rounded-xl md:p-5 p-3"
               >
                 <div className="flex flex-col gap-6">
                   <h1 className="text-sm font-bold text-wrap w-24">
                     {item.name}
                   </h1>
-                  <Link className="text-xs font-bold space-x-2">
-                  <span>SHOP NOW</span>
+                  <Link className="text-xs font-bold space-x-2 text-primary">
+                  <span className="text-primary">SHOP NOW</span>
                   <i className="fa fa-arrow-right"></i></Link>
                 </div>
                 <img
@@ -135,10 +135,9 @@ function NewArrivals({ products = [] }) {
           <Spinner size="text-3xl m-auto" />
         </div>
       ) : (
-        <div className="flex items-center gap-3 no-scrollbar py-3 pb-6 overflow-scroll mt-6 w-full">
+        <div className="flex items-center gap-3 no-scrollbar py-3 pb-6 overflow-scroll md:mt-6 w-full">
           {sortedProducts.slice(0, 15).map((item, index) => (
-            <div className="w-[220px] flex-shrink-0 h-full">
-              <div className="h-[360px]">
+            <div className="md:w-[220px] w-[45%] flex-shrink-0 md:h-[360px] h-[300px]">
                 <UsersProductCard
                   id={item.id}
                   key={index}
@@ -148,7 +147,7 @@ function NewArrivals({ products = [] }) {
                   category={item.category}
                   brand={item.brand}
                 />
-              </div>
+             
             </div>
           ))}
         </div>
@@ -157,54 +156,7 @@ function NewArrivals({ products = [] }) {
   );
 }
 
-function FeaturedProducts() {
-  const { products, isProductLoading, fetchProducts, productCount } =
-    useProducts();
 
-  const [pageNo, setPageNo] = useState(1);
-  const limit = 20;
-
-  useEffect(() => {
-    fetchProducts(pageNo, limit);
-  }, [pageNo]);
-
-  const maxPageNo = Math.ceil(productCount / limit);
-  return (
-    <section className="">
-      <Subtitle label={"Featured Products"}></Subtitle>
-
-      {isProductLoading ? (
-        <div className="flex w-full h-60">
-          <Spinner size="text-4xl m-auto" />
-        </div>
-      ) : (
-        <div className="grid items-center gap-3 no-scrollbar py-3  grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] mt-8 w-full">
-          {products.map((item, index) => (
-            <UsersProductCard
-              key={index}
-              id={item.id}
-              label={item.name}
-              imageSrc={item.image_src}
-              price={`₦${item.price}`}
-              brand={item.brand}
-              category={item.category}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="mt-10">
-        <PageNavigator
-          pageNo={pageNo}
-          maxPageNo={maxPageNo}
-          onPageChange={(e) => {
-            setPageNo(e);
-          }}
-        />
-      </div>
-    </section>
-  );
-}
 
  function CategoriesPreview() {
   const [categories, setCategories] = useState([]);
@@ -233,7 +185,7 @@ function FeaturedProducts() {
       <div className="">
         {categories &&
           categories.slice(0,5).map((category) => (
-            <div className="flex flex-col gap-5 mb-20 mt-6">
+            <div className="flex flex-col gap-5 md:mb-20 mt-6">
               <Subtitle
                 label={category.name}
                 action={"Shop More"}
@@ -250,15 +202,45 @@ function FeaturedProducts() {
 }
 
 function MoreToLike({ products = [] }) {
+  const scrollRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const interval = setInterval(() => {
+      if (isPaused) return;
+
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 1;
+
+      if (isAtEnd) {
+        // Snap back to start smoothly
+        container.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        container.scrollBy({ left: clientWidth + 16, behavior: "smooth" });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
   return (
     <div>
       <Subtitle label={"More to Like"} />
-      <div className="flex items-center gap-4 mt-8 overflow-scroll no-scrollbar">
+      <div
+        ref={scrollRef}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+        className="flex items-center gap-4 mt-8 overflow-x-scroll no-scrollbar"
+      >
         {products.slice(0, 5).map((item, index) => (
-          <div className="flex-shrink-0 w-[500px]">
+          <div key={index} className="flex-shrink-0 md:w-[500px] w-full">
             <SecondaryProductCard
-            id={item.id}
-              key={index}
+              id={item.id}
               label={item.name}
               imageSrc={item.image_src}
               price={`₦${item.price}`}

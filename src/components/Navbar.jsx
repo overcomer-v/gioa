@@ -102,15 +102,16 @@ export function UserNavBar({ setShowBrands, showBrands }) {
       className={`${generalPagePadding} py-4 gap-6  bg-primary flex items-center overflow-auto sticky top-0 z-50`}
     >
       <NavItems label={"Home"} iconData={"fa-home"} to={"/"}></NavItems>
+
       <NavItems
-        label={"Contact Us"}
-        iconData={"fa-phone"}
-        to={"/b"}
+        label={"Categories"}
+        iconData={"fa-sort"}
+        to={"/categories"}
       ></NavItems>
       <NavItems
-        label={"About Us"}
-        iconData={"fa-bullseye"}
-        to={"/a"}
+        label={"Featured"}
+        iconData={"fa-box"}
+        to={"/featured-products"}
       ></NavItems>
       <div
         className={`${showBrands && "border-[2px] border-neutral-100 rounded-xl"}`}
@@ -125,10 +126,11 @@ export function UserNavBar({ setShowBrands, showBrands }) {
           }}
         ></NavItems>
       </div>
+      <NavItems label={"Contact Us"} iconData={"fa-phone"} to={"/b"}></NavItems>
       <NavItems
-        label={"Categories"}
-        iconData={"fa-sort"}
-        to={"/categories"}
+        label={"About Us"}
+        iconData={"fa-bullseye"}
+        to={"/a"}
       ></NavItems>
     </nav>
   );

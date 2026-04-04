@@ -24,7 +24,7 @@ export function CategoriesItemsView({ category,exclusion=[] }) {
         {categoryItems ?   <div className="flex gap-3 overflow-scroll no-scrollbar py-3 pb-6 w-full">
           {categoryItems &&
             categoryItems.map((item, index) => (
-              <div className="w-[220px] flex-shrink-0">
+              <div className="md:w-[220px] w-[48%] flex-shrink-0 md:h-[360px] h-[300px]">
                 <UsersProductCard
                 id={item.id}
                   key={index}
