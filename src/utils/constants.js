@@ -1,1 +1,1 @@
-export const generalPagePadding = "lg:px-56 px-2 md:px-24";
+export const generalPagePadding = "lg:px-56 px-2 md:px-20";
