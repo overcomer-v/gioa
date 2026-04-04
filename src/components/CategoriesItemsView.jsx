@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useProducts } from "../hooks/databaseManager/useProducts";
 import { Spinner } from "./Spinners";
 import { UsersProductCard } from "./Cards";
+import { useIsMobile } from "../hooks/useDevice";
 
 export function CategoriesItemsView({ category,exclusion=[] }) {
     const {fetchGroupItems} = useProducts();
-      const [categoryItems, setCategoryItems] = useState();
+      const [categoryItems, setCategoryItems] = useState([]);
+      const isMobile = useIsMobile();
   
       useEffect(() => {
        fetchGroupItems("category",category).then((items) => {
@@ -18,13 +20,15 @@ export function CategoriesItemsView({ category,exclusion=[] }) {
           setCategoryItems(items);
         });
       }, [category]);
+
+      const itemsToDisplay = isMobile ? categoryItems.slice(0,4) : categoryItems;
   
       return (
       <div>
-        {categoryItems ?   <div className="flex gap-3 overflow-scroll no-scrollbar py-3 pb-6 w-full">
-          {categoryItems &&
-            categoryItems.map((item, index) => (
-              <div className="md:w-[220px] w-[48%] flex-shrink-0 md:h-[360px] h-[300px]">
+        {itemsToDisplay ?   <div className="md:flex grid grid-cols-2 gap-3 overflow-scroll no-scrollbar py-3 pb-6 w-full">
+          {itemsToDisplay &&
+            itemsToDisplay.map((item, index) => (
+              <div className="md:w-[220px] w-full flex-shrink-0 md:h-[360px] h-[300px]">
                 <UsersProductCard
                 id={item.id}
                   key={index}

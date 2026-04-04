@@ -13,7 +13,7 @@ export function UsersProductCard({
     <Link
       onClick={onClick}
       to={`/product-details/${id}`}
-      className={`flex flex-col gap-1 justify-between h-full px-3 md:px-4 py-5 cursor-pointer shadow-lg bg-white border rounded-md relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}
+      className={`flex flex-col gap-1 justify-between h-full px-3 md:px-4 py-5 cursor-pointer shadow-lg bg-white border rounded-xl relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}
     >
       <div className="flex gap-2 flex-col">
         <img
