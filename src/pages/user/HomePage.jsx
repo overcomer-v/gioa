@@ -65,7 +65,7 @@ export function UserHomePage() {
           />
           <div className="  flex absolute z-20 top-0 right-0 left-0 bottom-0 bg-black bg-opacity-50">
             <div
-              className={` my-auto lg:min-w-[1000px] w-[70%] ${generalPagePadding} flex flex-col gap-4 text-white`}
+              className={` my-auto lg:min-w-[1000px] w-[70%] max ${generalPagePadding} flex flex-col gap-4 text-white`}
             >
               <h1 className="md:text-7xl text-2xl font-bold ">
                 Upgrade Your World with the Latest Tech
@@ -86,7 +86,7 @@ export function UserHomePage() {
 
   function TopCategoriesSection({ categories = [] }) {
     return (
-      <section className="md:mt-12 mt-6 w-full">
+      <section className="md:mt-12 mt-8 w-full mb-10">
         <Subtitle label={"Top Categories"}></Subtitle>
 
         {categories.length === 0 ? (
@@ -173,7 +173,7 @@ function NewArrivals({ products = [] }) {
           className="flex items-center gap-3 no-scrollbar py-3 pb-6 overflow-scroll md:mt-6 w-full"
         >
           {sortedProducts.slice(0, 15).map((item, index) => (
-            <div className="md:w-[220px] w-[48%] flex-shrink-0 md:h-[360px] h-[310px]">
+            <div className="md:w-[220px] w-[48%] flex-shrink-0 md:h-[360px] h-[290px]">
               <UsersProductCard
                 id={item.id}
                 key={index}
@@ -215,10 +215,10 @@ function CategoriesPreview() {
         <i className="fa fa-bullseye text-primary"></i>
         <h1 className="text-2xl font-bold py-4 text-primary">Categories</h1>
       </div> */}
-      <div className="">
+      <div className="flex flex-col gap-10">
         {categories &&
           categories.slice(0, 5).map((category) => (
-            <div className="flex flex-col gap-5 md:mb-20 mt-6">
+            <div className="flex flex-col md:gap-5 gap-2 md:mb-20 mt-6">
               <Subtitle
                 label={category.name}
                 action={"Shop More"}
@@ -272,7 +272,7 @@ function MoreToLike({ products = [] }) {
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
         onTouchEnd={() => setIsPaused(false)}
-        className="flex items-center gap-4 mt-8 overflow-x-scroll no-scrollbar"
+        className="flex items-center gap-4 md:mt-8 mt-4 overflow-x-scroll no-scrollbar"
       >
         {products.slice(0, 5).map((item, index) => (
           <div key={index} className="flex-shrink-0 md:w-[500px] w-full">

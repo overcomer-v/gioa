@@ -13,7 +13,7 @@ export function UsersProductCard({
     <Link
       onClick={onClick}
       to={`/product-details/${id}`}
-      className={`flex flex-col gap-1 justify-between h-full px-3 md:px-4 py-5 cursor-pointer shadow-lg bg-white border rounded-xl relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}
+      className={`flex flex-col gap-1 justify-between h-full px-3 md:px-4 py-4 cursor-pointer shadow-md bg-white border rounded-xl relative ease-in-out duration-200 hover:scale-95 transform transition-transform `}
     >
       <div className="flex gap-2 flex-col">
         <img
@@ -30,7 +30,7 @@ export function UsersProductCard({
           <span className=" text-sm">{brand}</span>
         </div>
       </div>
-      <h2 className="font-semibold mt-3 text-base tracking-wide opacity-100 text-[rgb(133,150,21)]">
+      <h2 className="font-semibold mt-2 text-base tracking-wide opacity-100 text-[rgb(133,150,21)]">
         {price}
       </h2>
 
