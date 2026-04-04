@@ -22,7 +22,7 @@ export function UsersProductCard({
           alt=""
         />
         <h2 className="text-xs text-primary hidden md:flex">{category}</h2>
-        <p className="font-semibold text-base line-clamp-2 text-primary">
+        <p className="font-semibold md:text-base text-sm line-clamp-2 text-primary">
           {label}
         </p>
         <div className="flex items-center gap-2 ">
@@ -30,7 +30,7 @@ export function UsersProductCard({
           <span className=" text-sm">{brand}</span>
         </div>
       </div>
-      <h2 className="font-semibold mt-2 text-base tracking-wide opacity-100 text-[rgb(133,150,21)]">
+      <h2 className="font-semibold mt-2 tracking-wide opacity-100 text-[rgb(133,150,21)]">
         {price}
       </h2>
 
@@ -61,7 +61,7 @@ export function SecondaryProductCard({
           <div className="flex items-center gap-2 mt-6">
             <i className="fa fa-shopping-cart bg-primary text-white h-10 w-10 flex items-center justify-center rounded-full"></i>
 
-            <button className="bg-primary font-bold text-white py-3 px-4 w-fit rounded-full text-sm ">
+            <button className="bg-primary font-bold text-white py-3 px-4 w-fit rounded-full text-sm text-nowrap">
               Buy Now
             </button>
           </div>

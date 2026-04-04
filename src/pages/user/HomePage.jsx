@@ -173,7 +173,7 @@ function NewArrivals({ products = [] }) {
           className="flex items-center gap-3 no-scrollbar py-3 pb-6 overflow-scroll md:mt-6 w-full"
         >
           {sortedProducts.slice(0, 15).map((item, index) => (
-            <div className="md:w-[220px] w-[48%] flex-shrink-0 md:h-[360px] h-[290px]">
+            <div className="md:w-[220px] w-[48%] flex-shrink-0 md:h-[360px] h-[280px]">
               <UsersProductCard
                 id={item.id}
                 key={index}
