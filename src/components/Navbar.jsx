@@ -99,7 +99,7 @@ export function AdminNavBar({ openAdminNavbar, setOpenAdminNavbar }) {
 export function UserNavBar({ setShowBrands, showBrands }) {
   return (
     <nav
-      className={`${generalPagePadding} py-4 gap-6  bg-primary flex items-center overflow-auto sticky top-0 z-50`}
+      className={`${generalPagePadding} py-4 gap-6 no-scrollbar bg-primary md:flex items-center overflow-auto hidden sticky top-0 z-50`}
     >
       <NavItems label={"Home"} iconData={"fa-home"} to={"/"}></NavItems>
 

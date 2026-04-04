@@ -79,18 +79,23 @@ function UserRoutesParent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [loaction]);
   return (
-    <div className="relative flex flex-col justify-between h-full min-h-screen">
-      <div>
-        <MainHeader></MainHeader>
-        <UserNavBar
-          setShowBrands={setShowBrandsView}
-          showBrands={showBrandsView}
-        ></UserNavBar>
-        {showBrandsView && <BrandsView />}
-        <Outlet />
+   
+      <div className="relative flex flex-col justify-between  h-full min-h-screen ">
+        <div>
+          <MainHeader></MainHeader>
+          <UserNavBar
+            setShowBrands={setShowBrandsView}
+            showBrands={showBrandsView}
+          ></UserNavBar>
+          {showBrandsView && <BrandsView />}
+          <div className=" ">
+           <Outlet /> 
+          </div>
+          
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    
   );
 }
 

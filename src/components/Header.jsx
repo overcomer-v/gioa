@@ -76,17 +76,20 @@ export function MainHeader() {
       className={`flex items-center ${generalPagePadding} py-5 justify-between w-full neutral-bg`}
     >
       <div className="flex items-center gap-2">
-        <i className="fa fa-laptop text-white  bg-[rgb(171,192,34)] px-2 py-1 rounded-md text-xl"></i>{" "}
-        <h2 className="text-2xl font-bold text-primary">GIOA</h2>
+        <i className="fa fa-bars text-lg mr-4 md:hidden block"></i>
+        <i className="fa fa-laptop text-white  bg-[rgb(171,192,34)] px-2 py-2 md:py-1 rounded-md md:text-xl"></i>{" "}
+        <h2 className="md:text-2xl font-bold text-primary">GIOA</h2>
       </div>
       <div className="w-[40%] h-12 flex items-center justify-between rounded-xl overflow-hidden">
         <input
-          className="bg-transparent px-8 border-neutral-200 border-2 rounded-l-xl h-full w-full py-1 text-sm placeholder:text-neutral-600"
+          className="bg-transparent px-8 hidden lg:block border-neutral-200 border-2 rounded-l-xl h-full w-full py-1 text-sm placeholder:text-neutral-600"
           type="text"
           placeholder="Search Products here"
         />
-        <i className="fa fa-search bg-primary h-full w-12 justify-center text-white flex items-center"></i>
+        <i className="fa fa-search bg-primary hidden lg:flex h-full w-12 justify-center text-white items-center"></i>
+        
       </div>
+      <i className="fa fa-search md:hidden mr-3"></i>
       <div className="flex items-center gap-4">
         {user && role === "user" ? (
           <div
@@ -130,8 +133,8 @@ export function MainHeader() {
           </div>
         )}
         { user && role === "admin" ? (
-          <Link to={"/admin-board"} className="border-l-2 border-neutral-500 pl-4  flex items-center gap-3 cursor-pointer hover:underline underline-offset-4" >
-            <p className="font-semibold">Admin Page</p>
+          <Link to={"/admin-board"} className="border-l-2 border-neutral-500 pl-4 hidden md:flex items-center gap-3 cursor-pointer hover:underline underline-offset-4" >
+            <p className="font-semibold text-nowrap">Admin Page</p>
             <i className="fa fa-arrow-right"></i>
           </Link>
         ) :
@@ -140,7 +143,7 @@ export function MainHeader() {
       </div>
 
       {user && userProfile && showProfileDialogBox && (
-        <div className=" absolute top-20 right-20 bg-white rounded-lg p-4 px-8 z-[500] shadow-inner border-2 drop-shadow-md">
+        <div className=" absolute top-20 md:right-20 right-5 bg-white rounded-lg p-4 px-8 z-[500] shadow-inner border-2 drop-shadow-md">
           <div className=" font-semibold mb-6 flex items-center justify-between">
             <p>Go To Profile</p>
             <i className="fa fa-arrow-right"></i>

@@ -28,17 +28,14 @@ export function UserHomePage() {
   return (
     <main className="">
       <div
-        className={`${generalPagePadding} flex text-sm neutral-bg overflow-scroll no-scrollbar my-2 `}
+        className={`${generalPagePadding} text-sm neutral-bg overflow-scroll no-scrollbar my-2 hidden md:flex`}
       >
-        <div className="flex items-center py-4 gap-4 mr-8 text-[rgb(133,150,21)]">
-          <span className="text-nowrap ">All Categories</span>
-          <i className="fa fa-bars"></i>
-        </div>
+     
         {categories.map((category, index) => (
           <Link
             key={index}
             to={`/group-opener/category/${category.name}`}
-            className="py-4 px-4 hover:bg-neutral-200 hover:text-neutral-800 text-nowrap text-[rgb(133,150,21)]"
+            className="py-4 px-4 hover:bg-neutral-200 hover:text-neutral-800 text-nowrap text-black"
           >
             {category.name}
           </Link>
@@ -46,7 +43,7 @@ export function UserHomePage() {
       </div>
 
       <HeroSection></HeroSection>
-      <section className={` flex flex-col md:gap-16 ${generalPagePadding}`}>
+      <section className={` flex flex-col md:gap-16 gap-6 ${generalPagePadding}`}>
         <TopCategoriesSection categories={categories} />
         <NewArrivals products={products} />
 
@@ -68,7 +65,7 @@ export function UserHomePage() {
           />
           <div className="  flex absolute z-20 top-0 right-0 left-0 bottom-0 bg-black bg-opacity-50">
             <div
-              className={` my-auto md:w-[60%] w-[80%] ${generalPagePadding} flex flex-col gap-4 text-white`}
+              className={` my-auto lg:min-w-[1000px] w-[70%] ${generalPagePadding} flex flex-col gap-4 text-white`}
             >
               <h1 className="md:text-7xl text-2xl font-bold ">
                 Upgrade Your World with the Latest Tech

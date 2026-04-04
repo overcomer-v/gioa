@@ -1,9 +1,11 @@
 export function Subtitle({ label, action, onAction }) {
   return (
     <div className="flex justify-between">
-      <div>
-        <h2 className=" font-bold  md:text-2xl text-lg md:mb-2 mb-1">{label}</h2>{" "}
-        <div className="md:w-12 w-8 bg-primary rounded-sm h-2"></div>
+      <div className="flex items-center gap-2">
+        <div className="md:w-3 w-2 md:h-6 h-4 bg-primary rounded-sm"></div>
+        <h2 className=" font-bold  md:text-2xl text-lg">
+          {label}
+        </h2>{" "}
       </div>
       {action && (
         <button
