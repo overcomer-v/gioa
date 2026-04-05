@@ -40,10 +40,10 @@ export function ProductDetailsView() {
             / <div className="ml-2 text-primary ">{productItem.name}</div>
           </div>
 
-          <div className="grid grid-cols-2 items-center gap-4 ">
+          <div className="grid md:grid-cols-2 items-center gap-4 mt-6 md:mt-0 ">
             <div className=" ">
               <img
-                className="w-[90%] max-h-96 aspect-auto object-cover rounded-lg"
+                className="md:w-[90%] md:max-h-96 w-full aspect-auto object-cover rounded-lg"
                 src={productItem.image_src}
                 alt=""
               />
@@ -64,9 +64,10 @@ export function ProductDetailsView() {
                       ([key, value]) => (
                         <div
                           key={key}
-                          className="border p-2 rounded flex items-center text-nowrap text-ellipsis overflow-hidden"
+                          className="border p-2 rounded flex gap-2 flex-wrap items-center text-nowrap text-ellipsis overflow-hidden"
                         >
-                          <h2 className="font-semibold">{key}</h2> : {value}
+                          <h2 className="font-semibold">{key}</h2>
+                          <span className="opacity-80"> {value}</span>
                         </div>
                       ),
                     )}
@@ -88,7 +89,7 @@ export function ProductDetailsView() {
 
   function OrderInfo() {
     return (
-      <div className="flex flex-col p-10 h-fit ">
+      <div className="flex flex-col md:p-10 p-3 py-10 h-fit">
         <GoToCategories
           classname={"text-primary text-sm hover:underline"}
           text={productItem.category}
@@ -109,11 +110,11 @@ export function ProductDetailsView() {
         </span>
         <span className="opacity-90">Color : Black</span>
         <div className="flex flex-nowrap items-center gap-4 [&_div]:rounded-full mt-10 ">
-          <div className="px-10 py-4 neutral-bg border flex items-center gap-4 ">
+          <div className="md:px-10 px-8 py-4 neutral-bg border flex items-center gap-4 md:text-base text-sm">
             <button className="text-nowrap">Add to Cart</button>
             <i className="fa fa-shopping-cart"></i>
           </div>
-          <div className="px-10 py-4 bg-primary flex items-center gap-4 text-white">
+          <div className="md:px-10 py-4 px-8 bg-primary flex items-center gap-4 text-white md:text-base text-sm">
             <button className="text-nowrap">Buy Now</button>
             <i className="fa fa-arrow-right"></i>
           </div>

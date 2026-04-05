@@ -33,7 +33,7 @@ export function GroupListOpener() {
   return (
     <div className={`${generalPagePadding}`}>
       <div
-        className={`w-full neutral-bg  flex items-center py-4 gap-3 mt-12 border px-4`}
+        className={`w-full neutral-bg  flex items-center py-4 gap-3 md:mt-12 border px-4`}
       >
         <i
           className="fa fa-chevron-left text-lg text-primary cursor-pointer py-1 px-3 hover:text-white rounded-md hover:bg-primary"
@@ -41,7 +41,7 @@ export function GroupListOpener() {
             window.history.back();
           }}
         ></i>
-        <h1 className="text-2xl text-primary font-bold pb-1">{`${capitalizeFirstLetter(typeItem)}`}</h1>
+        <h1 className="md:text-2xl text-lg text-primary font-bold pb-1">{`${capitalizeFirstLetter(typeItem)}`}</h1>
       </div>
       {!itemsList || loading? (
         <div className="flex h-screen w-full">
@@ -50,11 +50,11 @@ export function GroupListOpener() {
       ) : (
         <>
           <div
-            className={`flex flex-wrap gap-3 no-scrollbar mt-6 py-3  w-full `}
+            className={`md:flex grid grid-cols-2 gap-3 overflow-scroll no-scrollbar py-3 pb-6 w-full `}
           >
             {itemsList &&
               itemsList.map((item, index) => (
-                <div className="w-[220px]">
+                <div className="md:w-[220px] w-full flex-shrink-0 md:h-[360px] h-[280px]">
                   <UsersProductCard
                     id={item.id}
                     key={index}

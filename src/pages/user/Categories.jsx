@@ -26,7 +26,7 @@ export function CategoriesViewer() {
       <Spinner size="text-3xl opacity-70 top-[40vh] absolute left-1/2" />
     </div>
   ) : (
-    <div className={`${generalPagePadding} mt-12`}>
+    <div className={`${generalPagePadding} md:mt-12`}>
       <div className=" flex items-center gap-3 w-full neutral-bg shadow-sm border px-4">
         <i
           className="fa fa-chevron-left text-lg text-primary cursor-pointer py-1 px-3 hover:text-white rounded-md hover:bg-primary"
@@ -34,9 +34,9 @@ export function CategoriesViewer() {
             window.history.back();
           }}
         ></i>
-        <h1 className="text-2xl font-bold py-4 text-primary">Categories</h1>
+        <h1 className="md:text-2xl text-lg font-bold py-4 text-primary">Categories</h1>
       </div>
-      <div className=" py-8">
+      <div className=" md:py-8">
         {categories &&
           categories.map((category) => (
             <div className="flex flex-col gap-5 mb-20 mt-6">
