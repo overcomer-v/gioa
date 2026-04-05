@@ -17,7 +17,7 @@ export function BrandsView() {
 
   return (
     <div className={`md:mt-6 pt-3  ${generalPagePadding}  page-animation md:border-0 border-t-2 border-neutral-100`}>
-    <h2 className="mb-6 font-semibold text-2xl text-primary">
+    <h2 className="md:mb-6 mb-3 font-semibold md:text-2xl text-xl text-primary">
       Brands
     </h2>
       {brands ? (
