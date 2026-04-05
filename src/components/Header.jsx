@@ -123,16 +123,16 @@ export function MainHeader({setShowMobileNav}) {
             {" "}
             <Link
               to={"/login"}
-              className="md:py-2 md:px-4 p-1 px-2 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
+              className="md:py-2 md:px-4 p-1 px-2 rounded-lg border-2 md:text-sm text-xs hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
             >
-              Login
+              SignIn
             </Link>
-            <Link
+            {/* <Link
               to={"/signup"}
-              className="md:py-2 md:px-4 px-2 py-1 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
+              className="md:py-2 md:px-4 px-2 py-1 rounded-lg border-2 md:text-sm text-xs hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
             >
-              SignUp
-            </Link>
+              Signup
+            </Link> */}
           </div>
         )}
         { user && role === "admin" ? (

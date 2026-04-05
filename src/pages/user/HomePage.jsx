@@ -67,7 +67,7 @@ export function UserHomePage() {
             <div
               className={` my-auto lg:min-w-[1000px] w-[70%] max ${generalPagePadding} flex flex-col gap-4 text-white`}
             >
-              <h1 className="md:text-7xl text-2xl font-bold ">
+              <h1 className="md:text-7xl text-3xl font-bold ">
                 Upgrade Your World with the Latest Tech
               </h1>
               <span className="opacity-70 text-xs md:text-base">
