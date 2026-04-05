@@ -207,7 +207,7 @@ function CategoriesPreview() {
 
   return isLoading ? (
     <div className="flex h-[80vh] w-full">
-      <Spinner size="text-5xl opacity-70 m-auto" />
+      <Spinner size="text-3xl opacity-90 m-auto" />
     </div>
   ) : (
     <div className="">

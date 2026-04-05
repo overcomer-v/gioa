@@ -10,7 +10,7 @@ import {
 } from "react-router-dom";
 import { SignUpPage } from "./pages/auth/SignUp";
 import { AuthContextProvider, useAuth } from "./contexts/AuthContext";
-import { AdminNavBar, UserNavBar } from "./components/Navbar";
+import { AdminNavBar, UserMobileNavBar, UserNavBar } from "./components/Navbar";
 import { AdminHeader, MainHeader } from "./components/Header";
 import { Products } from "./pages/admin/Products";
 import { LoginPage } from "./pages/auth/Login";
@@ -73,29 +73,33 @@ function App() {
 }
 
 function UserRoutesParent() {
-  const [showBrandsView, setShowBrandsView] = useState();
+  const [showBrandsView, setShowBrandsView] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const loaction = useLocation();
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [loaction]);
   return (
-   
-      <div className="relative flex flex-col justify-between  h-full min-h-screen ">
-        <div>
-          <MainHeader></MainHeader>
-          <UserNavBar
-            setShowBrands={setShowBrandsView}
-            showBrands={showBrandsView}
-          ></UserNavBar>
-          {showBrandsView && <BrandsView />}
-          <div className=" ">
-           <Outlet /> 
-          </div>
-          
+    <div className="relative flex flex-col justify-between  h-full min-h-screen ">
+      <div>
+        <MainHeader setShowMobileNav={setShowMobileNav}></MainHeader>
+        <UserNavBar
+          setShowBrands={setShowBrandsView}
+          showBrands={showBrandsView}
+        ></UserNavBar>
+        <UserMobileNavBar
+          showMobileNav={showMobileNav}
+          setShowMobileNav={setShowMobileNav}
+          setShowBrands={setShowBrandsView}
+          showBrands={showBrandsView}
+        />
+        {showBrandsView && <BrandsView />}
+        <div className=" ">
+          <Outlet />
         </div>
-        <Footer />
       </div>
-    
+      <Footer />
+    </div>
   );
 }
 

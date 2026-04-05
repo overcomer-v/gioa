@@ -1,5 +1,5 @@
-import { use, useEffect, useRef, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { supabase } from "../supabase";
 import { generalPagePadding } from "../utils/constants";
 
@@ -134,23 +134,76 @@ export function UserNavBar({ setShowBrands, showBrands }) {
       ></NavItems>
     </nav>
   );
+}
 
-  function NavItems({ label, to, iconData, onClick, isBrands }) {
-    return (
-      <NavLink to={to} onClick={onClick}>
-        {({ isActive }) => (
+export function UserMobileNavBar({showMobileNav,setShowMobileNav,setShowBrands, showBrands}) {
+
+const navRef = useRef(null);
+
+   useEffect(() => {
+    const handler = (e) => {
+      if (e.target !== navRef.current) {
+        setShowMobileNav(false);
+      }
+    };
+
+   setTimeout(()=>{
+     window.document.addEventListener("click", handler);
+   },200);
+    return () => window.document.removeEventListener("click", handler); // ← same reference
+  }, [showMobileNav,setShowMobileNav]);
+
+
+  return (
+    <>
+      <nav ref={navRef} className={`fixed ${showMobileNav ? "left-0" : "-left-[80%]"} top-0 bg-primary w-[70%] flex flex-col gap-4 h-full py-6 px-5 z-50 ease-in-out duration-500 translate-x-0`}>
+        <div className="flex items-center gap-4 mb-4 ml-5">
+          <i className="fa fa-laptop text-white bg-[rgb(171,192,34)] px-2 py-2 md:py-1 rounded-md md:text-xl"></i>
+          <h2 className="md:text-2xl font-bold text-white">GIOA</h2>
+           { <i className="text-xl fa fa-shopping-cart pl-4 text-white  ml-auto"></i>}
+        </div>
+
+        <NavItems label={"Home"} iconData={"fa-home"} to={"/"} />
+        <NavItems label={"Categories"} iconData={"fa-sort"} to={"/categories"} />
+        <NavItems label={"Featured"} iconData={"fa-box"} to={"/featured-products"} />
           <div
-            className={`flex text-white items-center gap-2 flex-shrink-0 flex-nowrap text-nowrap px-5 py-2 text-sm ${
-              isActive &&
-              !isBrands &&
-              "bg-neutral-100  !text-primary font-semibold scale-105"
-            } hover:bg-neutral-100 hover:text-primary rounded-lg`}
-          >
-            <i className={`fa ${iconData}`}></i>
-            <span className="">{label}</span>
-          </div>
-        )}
-      </NavLink>
-    );
-  }
+        className={`${showBrands && "border-[2px] border-neutral-100 rounded-xl"}`}
+      >
+        <NavItems
+          label={"Shop by Brands"}
+          iconData={"fa-shop"}
+          isBrands={true}
+          onClick={() => {
+            setShowBrands((e) => !e);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        ></NavItems>
+      </div>
+        <NavItems label={"Contact Us"} iconData={"fa-phone"} to={"/b"} />
+        <NavItems label={"About Us"} iconData={"fa-bullseye"} to={"/a"} />
+      </nav>
+
+      {/* Dark overlay on the right */}
+      <div className={`fixed top-0 h-full w-[100%] bg-black/30 z-40  ${showMobileNav ? "right-0 " : "-left-[100%]"} ease-in-out duration-500 translate-x-0`}  />
+    </>
+  );
+}
+
+function NavItems({ label, to, iconData, onClick, isBrands }) {
+  return (
+    <NavLink to={to} onClick={onClick}>
+      {({ isActive }) => (
+        <div
+          className={`flex text-white items-center gap-2 flex-shrink-0 flex-nowrap text-nowrap px-5 py-2 text-sm ${
+            isActive &&
+            !isBrands &&
+            "bg-neutral-100  !text-primary font-semibold scale-105"
+          } hover:bg-neutral-100 hover:text-primary rounded-lg`}
+        >
+          <i className={`fa ${iconData}`}></i>
+          <span className="">{label}</span>
+        </div>
+      )}
+    </NavLink>
+  );
 }

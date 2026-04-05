@@ -15,12 +15,12 @@ export function BrandsView() {
   }, []);
 
   return brands ? (
-    <div className={`flex flex-wrap gap-4 py-6 ${generalPagePadding} bg-white border-b-2 border-neutral-200 text-white max-60 overflow-y-scroll page-animation`}>
+    <div className={`flex flex-wrap gap-3 md:gap-4 md:py-6 pb-6 ${generalPagePadding} bg-white border-b-2 border-neutral-200 text-white max-60 overflow-y-scroll page-animation`}>
       {brands.map((e) => (
         <Link
         to={`/group-opener/brand/${e}`}
           key={e}
-          className="rounded-full py-2 px-4 text-sm border-2 border-neutral-200 text-primary hover:bg-primary hover:text-white"
+          className="rounded-full md:py-2 md:px-4 py-1 px-3 border-2 border-neutral-200 text-primary hover:bg-primary hover:text-white md:text-sm text-xs"
         >
           {e}
         </Link>

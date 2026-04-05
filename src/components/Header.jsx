@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 
 export function AdminHeader({ onAdminNavBarOpen }) {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const { userProfile } = useProfile();
   const [showProfileDialogBox, setShowProfileDialogBox] = useState(false);
 
@@ -59,7 +59,7 @@ export function AdminHeader({ onAdminNavBarOpen }) {
   );
 }
 
-export function MainHeader() {
+export function MainHeader({setShowMobileNav}) {
   const { user, role } = useAuth();
   const { userProfile } = useProfile();
   const [showProfileDialogBox, setShowProfileDialogBox] = useState(false);
@@ -76,7 +76,10 @@ export function MainHeader() {
       className={`flex items-center ${generalPagePadding} py-5 justify-between w-full neutral-bg`}
     >
       <div className="flex items-center gap-2">
-        <i className="fa fa-bars text-lg mr-4 md:hidden block"></i>
+        <i onClick={(e)=>{
+          setShowMobileNav(true);
+          e.stopPropagation();
+        }} className="fa fa-bars text-lg mr-4 md:hidden block cursor-pointer"></i>
         <i className="fa fa-laptop text-white  bg-[rgb(171,192,34)] px-2 py-2 md:py-1 rounded-md md:text-xl"></i>{" "}
         <h2 className="md:text-2xl font-bold text-primary">GIOA</h2>
       </div>
@@ -89,7 +92,7 @@ export function MainHeader() {
         <i className="fa fa-search bg-primary hidden lg:flex h-full w-12 justify-center text-white items-center"></i>
         
       </div>
-      <i className="fa fa-search md:hidden mr-3"></i>
+      <i className="fa fa-search lg:hidden mr-3 text-lg bg-neutral-100 rounded-full p-2 px-3"></i>
       <div className="flex items-center gap-4">
         {user && role === "user" ? (
           <div
@@ -100,7 +103,7 @@ export function MainHeader() {
             }}
           >
             <i className="fa fa-user-circle text-xl"></i>
-            <p className="font-medium">{userProfile?.name}</p>
+            <p className="font-medium hidden md:block">{userProfile?.name}</p>
           </div>
         ) : role === "admin" ? (
           <div>
@@ -112,7 +115,7 @@ export function MainHeader() {
               }}
             >
               <i className="fa fa-user-circle text-xl"></i>
-              <p className="font-medium">{"Admin"}</p>
+              <p className="font-medium hidden md:block">{"Admin"}</p>
             </div>
           </div>
         ) : (
@@ -120,13 +123,13 @@ export function MainHeader() {
             {" "}
             <Link
               to={"/login"}
-              className="py-2 px-4 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
+              className="md:py-2 md:px-4 p-1 px-2 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
             >
               Login
             </Link>
             <Link
               to={"/signup"}
-              className="py-2 px-4 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
+              className="md:py-2 md:px-4 px-2 py-1 rounded-md border-2 text-sm hover:border-primary border-neutral-600 hover:bg-primary hover:text-white"
             >
               SignUp
             </Link>
@@ -138,12 +141,21 @@ export function MainHeader() {
             <i className="fa fa-arrow-right"></i>
           </Link>
         ) :
-          <i className="text-xl fa fa-shopping-cart border-l-2 border-neutral-500 pl-4 text-[rgb(171,192,34)] "></i>
+         ( user &&  <i className="text-xl fa fa-shopping-cart border-l-2 border-neutral-500 pl-4 text-[rgb(171,192,34)] "></i>)
         }{" "}
       </div>
 
       {user && userProfile && showProfileDialogBox && (
-        <div className=" absolute top-20 md:right-20 right-5 bg-white rounded-lg p-4 px-8 z-[500] shadow-inner border-2 drop-shadow-md">
+        <HeaderDialog userProfile={userProfile}></HeaderDialog>
+      )}
+    </header>
+  );
+}
+
+
+function HeaderDialog({userProfile}) {
+  return(
+    <div className=" absolute top-20 md:right-20 right-5 bg-white rounded-lg p-4 px-8 z-[500] shadow-inner border-2 drop-shadow-md">
           <div className=" font-semibold mb-6 flex items-center justify-between">
             <p>Go To Profile</p>
             <i className="fa fa-arrow-right"></i>
@@ -162,7 +174,5 @@ export function MainHeader() {
             <p className="">Sign Out</p>
           </button>
         </div>
-      )}
-    </header>
   );
 }
