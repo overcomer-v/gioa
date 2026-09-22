@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { supabase } from "../supabase";
 import { generalPagePadding } from "../utils/constants";
+import { useIsMobile } from "../hooks/useDevice";
 
 export function AdminNavBar({ openAdminNavbar, setOpenAdminNavbar }) {
   const navRef = useRef();
@@ -99,111 +100,193 @@ export function AdminNavBar({ openAdminNavbar, setOpenAdminNavbar }) {
 export function UserNavBar({ setShowBrands, showBrands }) {
   return (
     <nav
-      className={`${generalPagePadding} py-4 gap-6 no-scrollbar bg-primary md:flex items-center overflow-auto hidden sticky top-0 z-50`}
+      className={`
+        ${generalPagePadding}
+        hidden md:flex
+        items-center
+        gap-6
+        h-14
+        bg-white
+        border-b border-neutral-200
+        sticky top-0 z-40
+        overflow-x-auto
+        no-scrollbar
+      `}
     >
-      <NavItems label={"Home"} iconData={"fa-home"} to={"/"}></NavItems>
+      <NavItems label="Home" iconData="fa-home" to="/" />
 
-      <NavItems
-        label={"Categories"}
-        iconData={"fa-sort"}
-        to={"/categories"}
-      ></NavItems>
-      <NavItems
-        label={"Featured"}
-        iconData={"fa-box"}
-        to={"/featured-products"}
-      ></NavItems>
-      <div
-        className={`${showBrands && "border-[2px] border-neutral-100 rounded-xl"}`}
+      <NavItems label="Categories" iconData="fa-sort" to="/categories" />
+
+      <NavItems label="Featured" iconData="fa-box" to="/featured-products" />
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowBrands((current) => !current);
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+        }}
+        className={`
+          flex
+          items-center
+          gap-2
+          flex-shrink-0
+          whitespace-nowrap
+          rounded-lg
+          px-3
+          h-9
+          text-sm
+          font-medium
+          transition-colors
+          duration-200
+          ${
+            showBrands
+              ? "bg-primary text-white"
+              : "text-primary hover:bg-neutral-100"
+          }
+        `}
       >
-        <NavItems
-          label={"Shop by Brands"}
-          iconData={"fa-shop"}
-          isBrands={true}
-          onClick={() => {
-            setShowBrands((e) => !e);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        ></NavItems>
-      </div>
-      <NavItems label={"Contact Us"} iconData={"fa-phone"} to={"/b"}></NavItems>
-      <NavItems
-        label={"About Us"}
-        iconData={"fa-bullseye"}
-        to={"/a"}
-      ></NavItems>
+        <i className="fa fa-shop text-xs opacity-60" />
+
+        <span>Shop by Brands</span>
+
+        <i
+          className={`
+            fa fa-chevron-down
+            text-[9px]
+            transition-transform duration-200
+            ${showBrands ? "rotate-180" : ""}
+          `}
+        />
+      </button>
+
+      <NavItems label="Contact" iconData="fa-phone" to="/contact" />
+
+      <NavItems label="About" iconData="fa-bullseye" to="/about" />
     </nav>
   );
 }
 
-export function UserMobileNavBar({showMobileNav,setShowMobileNav,setShowBrands, showBrands}) {
+export function UserMobileNavBar({
+  showMobileNav,
+  setShowMobileNav,
+  setShowBrands,
+  showBrands,
+}) {
+  const navRef = useRef(null);
 
-const navRef = useRef(null);
-
-   useEffect(() => {
+  useEffect(() => {
     const handler = (e) => {
       if (e.target !== navRef.current) {
         setShowMobileNav(false);
       }
     };
 
-   setTimeout(()=>{
-     window.document.addEventListener("click", handler);
-   },200);
+    setTimeout(() => {
+      window.document.addEventListener("click", handler);
+    }, 200);
     return () => window.document.removeEventListener("click", handler); // ← same reference
-  }, [showMobileNav,setShowMobileNav]);
-
+  }, [showMobileNav, setShowMobileNav]);
 
   return (
     <>
-      <nav ref={navRef} className={`fixed ${showMobileNav ? "left-0" : "-left-[80%]"} top-0 bg-primary w-[70%] flex flex-col gap-4 h-full py-6 px-5 z-50 ease-in-out duration-500 translate-x-0`}>
+      <nav
+        ref={navRef}
+        className={`fixed ${showMobileNav ? "left-0" : "-left-[80%]"} top-0 bg-primary w-[70%] flex flex-col gap-4 h-full py-6 px-5 z-50 ease-in-out duration-500 translate-x-0`}
+      >
         <div className="flex items-center gap-4 mb-4 ml-5">
           <i className="fa fa-laptop text-white bg-[rgb(171,192,34)] px-2 py-2 md:py-1 rounded-md md:text-xl"></i>
           <h2 className="md:text-2xl font-bold text-white">GIOA</h2>
-           { <i className="text-xl fa fa-shopping-cart pl-4 text-white  ml-auto"></i>}
+          {
+            <i className="text-xl fa fa-shopping-cart pl-4 text-white  ml-auto"></i>
+          }
         </div>
 
         <NavItems label={"Home"} iconData={"fa-home"} to={"/"} />
-        <NavItems label={"Categories"} iconData={"fa-sort"} to={"/categories"} />
-        <NavItems label={"Featured"} iconData={"fa-box"} to={"/featured-products"} />
-          <div
-        className={`${showBrands && "border-[2px] border-neutral-100 rounded-xl"}`}
-      >
         <NavItems
-          label={"Shop by Brands"}
-          iconData={"fa-shop"}
-          isBrands={true}
-          onClick={() => {
-            setShowBrands((e) => !e);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        ></NavItems>
-      </div>
+          label={"Categories"}
+          iconData={"fa-sort"}
+          to={"/categories"}
+        />
+        <NavItems
+          label={"Featured"}
+          iconData={"fa-box"}
+          to={"/featured-products"}
+        />
+        <div
+          className={`${showBrands && "border-[2px] border-neutral-100 rounded-xl"}`}
+        >
+          <NavItems
+            label={"Shop by Brands"}
+            iconData={"fa-shop"}
+            isBrands={true}
+            onClick={() => {
+              setShowBrands((e) => !e);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          ></NavItems>
+        </div>
         <NavItems label={"Contact Us"} iconData={"fa-phone"} to={"/b"} />
         <NavItems label={"About Us"} iconData={"fa-bullseye"} to={"/a"} />
       </nav>
 
       {/* Dark overlay on the right */}
-      <div className={`fixed top-0 h-full w-[100%] bg-black/30 z-40  ${showMobileNav ? "right-0 " : "-left-[100%]"} ease-in-out duration-500 translate-x-0`}  />
+      <div
+        className={`fixed top-0 h-full w-[100%] bg-black/30 z-40  ${showMobileNav ? "right-0 " : "-left-[100%]"} ease-in-out duration-500 translate-x-0`}
+      />
     </>
   );
 }
 
 function NavItems({ label, to, iconData, onClick, isBrands }) {
+  const isMobile = useIsMobile();
+
+  function variety(active) {
+    if (isMobile) {
+      return active ? "bg-white text-black" : "hover:bg-neutral-700 text-white";
+    }else{
+      return active  ? "bg-primary text-white" : "text-primary hover:bg-neutral-100";
+    }
+  }
+
   return (
     <NavLink to={to} onClick={onClick}>
-      {({ isActive }) => (
-        <div
-          className={`flex text-white items-center gap-2 flex-shrink-0 flex-nowrap text-nowrap px-5 py-2 text-sm ${
-            isActive &&
-            !isBrands &&
-            "bg-neutral-100  !text-primary font-semibold scale-105"
-          } hover:bg-neutral-100 hover:text-primary rounded-lg`}
-        >
-          <i className={`fa ${iconData}`}></i>
-          <span className="">{label}</span>
-        </div>
-      )}
+      {({ isActive }) => {
+        const active = isActive && !isBrands;
+
+        return (
+          <div
+            className={`
+              flex
+              items-center
+              gap-2
+              flex-shrink-0
+              whitespace-nowrap
+              rounded-full
+              px-3
+              h-9
+              text-sm
+              font-medium
+              transition-colors
+              duration-200
+              ${variety(active)}
+            `}
+          >
+            <i
+              className={`
+                fa ${iconData}
+                text-xs
+                ${active ? "opacity-100" : "opacity-60"}
+              `}
+            />
+
+            <span>{label}</span>
+          </div>
+        );
+      }}
     </NavLink>
   );
 }

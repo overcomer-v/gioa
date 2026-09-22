@@ -1,167 +1,259 @@
-import { useEffect, useRef, useState } from "react";
-import { MainHeader } from "../../components/Header";
-import { UserNavBar } from "../../components/Navbar";
-import { useProducts } from "../../hooks/databaseManager/useProducts";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+import { useProducts } from "../../hooks/databaseManager/useProducts";
 import { generalPagePadding } from "../../utils/constants";
-import { SecondaryProductCard, UsersProductCard } from "../../components/Cards";
-import { Products } from "../admin/Products";
-import { PageNavigator } from "../../components/PageNavigator";
+import { UsersProductCard, SecondaryProductCard } from "../../components/Cards";
 import { Spinner } from "../../components/Spinners";
-import { BrandsView } from "../../components/BrandsView";
 import { Subtitle } from "../../components/Titles";
-import { CategoriesItemsView } from "../../components/CategoriesItemsView";
 import { useIsMobile } from "../../hooks/useDevice";
+import { getProductImage } from "../../utils/helpers";
+import { CategoriesItemsView } from "../../components/CategoriesItemsView";
 
 export function UserHomePage() {
   const [categories, setCategories] = useState([]);
+
   const { fetchCategories, products, fetchProducts } = useProducts();
 
   useEffect(() => {
     fetchProducts();
-    fetchCategories().then((e) => {
-      setCategories(e);
-      console.log(e);
+
+    fetchCategories().then((results) => {
+      setCategories(results || []);
+      console.log(results);
     });
   }, []);
 
   return (
-    <main className="">
+    <main className="bg-white text-neutral-900 w-full">
+      {/* Category navigation */}
+      {/* <CategoryNavigation categories={categories} /> */}
+
+      {/* Hero */}
+      <HeroSection />
+
+      <div className={`${generalPagePadding} flex flex-col gap-16 md:gap-24 mt-16`}>
+        {/* Popular categories */}
+        <TopCategoriesSection categories={categories} />
+
+        {/* New arrivals */}
+        <NewArrivals products={products} />
+
+        {/* Promotional banner */}
+        <PromoBanner />
+
+        {/* Category product sections */}
+        <CategoriesPreview />
+
+        {/* More products */}
+        <MoreToLike products={products} />
+      </div>
+    </main>
+  );
+}
+
+/* =========================================================
+   CATEGORY NAVIGATION
+========================================================= */
+
+function CategoryNavigation({ categories }) {
+  return (
+    <nav className="hidden md:block border-b bg-white">
       <div
-        className={`${generalPagePadding} text-sm neutral-bg overflow-scroll no-scrollbar my-2 hidden md:flex`}
+        className={`${generalPagePadding} flex items-center gap-1 overflow-x-auto no-scrollbar`}
       >
-     
-        {categories.map((category, index) => (
+        {categories.map((category) => (
           <Link
-            key={index}
+            key={category.id}
             to={`/group-opener/category/${category.name}`}
-            className="py-4 px-4 hover:bg-neutral-200 hover:text-neutral-800 text-nowrap text-black"
+            className="shrink-0 px-4 py-4 text-sm text-neutral-600 transition hover:text-black"
           >
             {category.name}
           </Link>
         ))}
       </div>
-
-      <HeroSection></HeroSection>
-      <section className={` flex flex-col md:gap-16 gap-6 ${generalPagePadding}`}>
-        <TopCategoriesSection categories={categories} />
-        <NewArrivals products={products} />
-
-        <CategoriesPreview />
-
-        <MoreToLike products={products} />
-      </section>
-    </main>
+    </nav>
   );
+}
 
-  function HeroSection() {
+/* =========================================================
+   HERO
+========================================================= */
+
+function HeroSection() {
+  return (
+    <section className="relative h-[430px] overflow-hidden md:h-[620px]">
+      <img
+        src="/images/pxfuel.jpg"
+        alt="Latest electronics"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50" />
+
+      {/* Content */}
+      <div
+        className={`${generalPagePadding} relative z-10 flex h-full items-center`}
+      >
+        <div className="max-w-2xl text-white">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-white/70 md:text-sm">
+            Discover what&apos;s next
+          </p>
+
+          <h1 className="text-4xl font-bold leading-[1.05] tracking-tight md:text-7xl">
+            Upgrade your world with better tech.
+          </h1>
+
+          <p className="mt-5 max-w-lg text-sm leading-6 text-white/75 md:text-base">
+            Explore quality electronics from trusted brands, built for work,
+            entertainment and everyday life.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              to="/group-opener/category/Headphones & Earbuds"
+              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-neutral-200"
+            >
+              Shop now
+            </Link>
+
+            <Link
+              to="/categories"
+              className="rounded-full border border-white/50 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Explore categories
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================
+   TOP CATEGORIES
+========================================================= */
+
+function TopCategoriesSection({ categories = [] }) {
+  if (categories.length === 0) {
     return (
       <section>
-        <div className="md:h-[600px] h-[300px] relative">
-          <img
-            className="h-full w-full object-cover absolute z-10 top-0 right-0 bottom-0 left-0"
-            src="/images/pxfuel.jpg"
-            alt=""
-          />
-          <div className="  flex absolute z-20 top-0 right-0 left-0 bottom-0 bg-black bg-opacity-50">
-            <div
-              className={` my-auto lg:min-w-[1000px] w-[70%] max ${generalPagePadding} flex flex-col gap-4 text-white`}
-            >
-              <h1 className="md:text-7xl text-3xl font-bold ">
-                Upgrade Your World with the Latest Tech
-              </h1>
-              <span className="opacity-70 text-xs md:text-base">
-                Discover premium electronics at prices you will love and a good
-                customer satisfaction
-              </span>
-              {/* <button className="bg-primary w-fit px-5 py-3 text-black rounded-full">
-                Shop Now
-              </button> */}
-            </div>
-          </div>
+        <SectionHeading
+          eyebrow="Explore"
+          title="Shop by category"
+        />
+
+        <div className="flex h-48 items-center justify-center">
+          <Spinner size="text-3xl" />
         </div>
       </section>
     );
   }
 
-  function TopCategoriesSection({ categories = [] }) {
-    return (
-      <section className="md:mt-12 mt-8 w-full mb-10">
-        <Subtitle label={"Top Categories"}></Subtitle>
+  return (
+    <section className="">
+      <SectionHeading
+        eyebrow="Explore"
+        title="Shop by category"
 
-        {categories.length === 0 ? (
-          <div className="flex w-full h-60">
-            <Spinner size="text-3xl m-auto" />
-          </div>
-        ) : (
-          <div className="md:flex grid grid-cols-2 items-center no-scrollbar py-3 overflow-scroll gap-4 md:mt-8 mt-4 w-full">
-            {categories.map((item, index) => (
-              <div
-                key={index}
-                className="flex flex-col-reverse md:flex-row shadow-md cursor-pointer flex-shrink-0 items-center md:gap-16 gap-4 border rounded-xl md:p-5 p-3"
-              >
-                <div className="flex flex-col gap-6">
-                  <h1 className="text-sm font-bold text-wrap w-24 text-center">
-                    {item.name}
-                  </h1>
-                  {/* <Link className="text-xs font-bold space-x-2 text-primary">
-                  <span className="text-primary">SHOP NOW</span>
-                  <i className="fa fa-arrow-right"></i></Link> */}
-                </div>
-                <img
-                  className="h-24 w-24 rounded-full object-cover"
-                  src={item.imageSrc}
-                  alt=""
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-    );
-  }
+      />
+
+      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+        {categories.slice(0, 6).map((category) => (
+          <Link
+            key={category.id}
+            to={`/group-opener/category/${category.name}`}
+            className="group relative h-40 overflow-hidden rounded-2xl bg-neutral-100 md:h-48"
+          >
+            {category.image_url ? (
+              <img
+                src={category.public_url}
+                alt={category.name}
+                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-neutral-100" />
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <h3 className="text-sm font-semibold text-white">
+                {category.name}
+              </h3>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
+
+/* =========================================================
+   NEW ARRIVALS
+========================================================= */
 
 function NewArrivals({ products = [] }) {
   const containerRef = useRef(null);
-  const sortedProducts = [...products];
-  sortedProducts.sort(
-    (a, b) => new Date(a.created_at) - new Date(b.created_at),
-  );
-
   const [isPaused, setIsPaused] = useState(false);
-
   const isMobile = useIsMobile();
+
+  const sortedProducts = useMemo(() => {
+    return [...products].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() -
+        new Date(a.created_at).getTime()
+    );
+  }, [products]);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+
+    if (!container || sortedProducts.length === 0) {
+      return;
+    }
 
     const interval = setInterval(() => {
       if (isPaused) return;
 
       const { scrollLeft, scrollWidth, clientWidth } = container;
-      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 1;
 
-      const scrollDistance = isMobile ? clientWidth + 24 : 440 + 24;
+      const isAtEnd =
+        scrollLeft + clientWidth >= scrollWidth - 5;
+
+      const scrollDistance = isMobile
+        ? clientWidth
+        : 500;
 
       if (isAtEnd) {
-        // Snap back to start smoothly
-        container.scrollTo({ left: 0, behavior: "smooth" });
+        container.scrollTo({
+          left: 0,
+          behavior: "smooth",
+        });
       } else {
-        container.scrollBy({ left: scrollDistance, behavior: "smooth" });
+        container.scrollBy({
+          left: scrollDistance,
+          behavior: "smooth",
+        });
       }
-    }, 2500);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, isMobile, sortedProducts.length]);
 
   return (
-    <div>
-      <Subtitle label={"New Arrivals"} />
-      {products.length === 0 ? (
-        <div className="flex w-full h-60">
-          <Spinner size="text-3xl m-auto" />
+    <section>
+      <SectionHeading
+        eyebrow="Just in"
+        title="New arrivals"
+        action="View all"
+        actionHref="/products"
+      />
+
+      {sortedProducts.length === 0 ? (
+        <div className="flex h-48 items-center justify-center">
+          <Spinner size="text-3xl" />
         </div>
       ) : (
         <div
@@ -170,122 +262,233 @@ function NewArrivals({ products = [] }) {
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={() => setIsPaused(true)}
           onTouchEnd={() => setIsPaused(false)}
-          className="flex items-center gap-3 no-scrollbar py-3 pb-6 overflow-scroll md:mt-6 w-full"
+          className="mt-6 flex gap-4 overflow-x-auto pb-4 no-scrollbar"
         >
-          {sortedProducts.slice(0, 15).map((item, index) => (
-            <div className="md:w-[220px] w-[48%] flex-shrink-0 md:h-[360px] h-[280px]">
-              <UsersProductCard
-                id={item.id}
-                key={index}
-                label={item.name}
-                imageSrc={item.image_src}
-                price={`₦${item.price}`}
-                category={item.category}
-                brand={item.brand}
-              />
-            </div>
+          {sortedProducts.slice(0, 15).map((product) => (
+            <ProductCardWrapper
+              key={product.id}
+              product={product}
+            />
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
+
+/* =========================================================
+   PROMOTIONAL BANNER
+========================================================= */
+
+function PromoBanner() {
+  return (
+    <section className="relative overflow-hidden rounded-3xl bg-neutral-900 px-6 py-12 text-white md:px-14 md:py-16">
+      <div className="relative z-10 max-w-xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
+          Power your everyday
+        </p>
+
+        <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">
+          Technology that fits your lifestyle.
+        </h2>
+
+        <p className="mt-4 max-w-md text-sm leading-6 text-white/60 md:text-base">
+          From portable audio to smart devices and everyday essentials,
+          find products made to keep up with you.
+        </p>
+
+        <Link
+          to="/products"
+          className="mt-7 inline-flex rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-neutral-200"
+        >
+          Start shopping
+        </Link>
+      </div>
+
+      {/* Decorative circles */}
+      <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full border border-white/10" />
+      <div className="absolute -bottom-32 right-20 h-80 w-80 rounded-full border border-white/10" />
+    </section>
+  );
+}
+
+/* =========================================================
+   CATEGORY PRODUCT PREVIEWS
+========================================================= */
 
 function CategoriesPreview() {
   const [categories, setCategories] = useState([]);
-  const { fetchCategories } = useProducts();
   const [isLoading, setIsLoading] = useState(true);
+
+  const { fetchCategories } = useProducts();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setIsLoading(true);
+    let mounted = true;
+
     fetchCategories().then((results) => {
-      setCategories(results);
+      if (!mounted) return;
+
+      setCategories(results || []);
       setIsLoading(false);
     });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  return isLoading ? (
-    <div className="flex h-[80vh] w-full">
-      <Spinner size="text-3xl opacity-90 m-auto" />
-    </div>
-  ) : (
-    <div className="">
-      {/* <div className=" flex items-center gap-3 w-full neutral-bg px-16 shadow-sm">
-        <i className="fa fa-bullseye text-primary"></i>
-        <h1 className="text-2xl font-bold py-4 text-primary">Categories</h1>
-      </div> */}
-      <div className="flex flex-col gap-10">
-        {categories &&
-          categories.slice(0, 5).map((category) => (
-            <div className="flex flex-col md:gap-5 gap-2 md:mb-20 mt-6">
-              <Subtitle
-                label={category.name}
-                action={"Shop More"}
-                onAction={() => {
-                  navigate(`/group-opener/category/${category.name}`);
-                }}
-              />
-              <CategoriesItemsView category={category.name} />
-            </div>
-          ))}
+  if (isLoading) {
+    return (
+      <div className="flex h-60 items-center justify-center">
+        <Spinner size="text-3xl opacity-70" />
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <section className="flex flex-col gap-14">
+      {categories.slice(0, 5).map((category) => (
+        <div key={category.id}>
+          <SectionHeading
+            eyebrow="Collection"
+            title={category.name}
+            action="Shop more"
+            onAction={() =>
+              navigate(
+                `/group-opener/category/${category.name}`
+              )
+            }
+          />
+
+          <CategoriesItemsView categoryId={category.id} />
+        </div>
+      ))}
+    </section>
   );
 }
 
+/* =========================================================
+   MORE TO LIKE
+========================================================= */
+
 function MoreToLike({ products = [] }) {
   const scrollRef = useRef(null);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    const interval = setInterval(() => {
-      if (isPaused) return;
-
-      const { scrollLeft, scrollWidth, clientWidth } = container;
-      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 1;
-
-      const scrollDistance = isMobile ? clientWidth + 16 : 500 + 16;
-
-      if (isAtEnd) {
-        // Snap back to start smoothly
-        container.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        container.scrollBy({ left: scrollDistance, behavior: "smooth" });
-      }
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [isPaused]);
 
   return (
-    <div>
-      <Subtitle label={"More to Like"} />
+    <section>
+      <SectionHeading
+        eyebrow="You may also like"
+        title="More to explore"
+      />
+
       <div
         ref={scrollRef}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
-        className="flex items-center gap-4 md:mt-8 mt-4 overflow-x-scroll no-scrollbar"
+        className="mt-6 flex gap-4 overflow-x-auto pb-4 no-scrollbar"
       >
-        {products.slice(0, 5).map((item, index) => (
-          <div key={index} className="flex-shrink-0 md:w-[500px] w-full">
+        {products.slice(0, 6).map((product) => (
+          <div
+            key={product.id}
+            className="w-[85vw] shrink-0 md:w-[440px]"
+          >
             <SecondaryProductCard
-              id={item.id}
-              label={item.name}
-              imageSrc={item.image_src}
-              price={`₦${item.price}`}
-              category={item.category}
+              id={product.id}
+              label={product.name}
+              imageSrc={getProductImage(product)}
+              price={`₦${Number(product.base_price || 0).toLocaleString()}`}
+              category={getProductCategory(product)}
             />
           </div>
         ))}
       </div>
+    </section>
+  );
+}
+
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
+function ProductCardWrapper({ product }) {
+  return (
+    <div className="w-[160px] shrink-0 md:w-[220px]">
+      <UsersProductCard
+        id={product.id}
+        label={product.name}
+        imageSrc={getProductImage(product)}
+        price={`₦${Number(
+          product.base_price || getProductPrice(product)
+        ).toLocaleString()}`}
+        category={getProductCategory(product)}
+        brand={product.brands?.name}
+      />
     </div>
   );
 }
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+
+function getProductPrice(product) {
+  return (
+    product.product_variants?.find(
+      (variant) => variant.is_active
+    )?.price || 0
+  );
+}
+
+function getProductCategory(product) {
+  return (
+    product.categories?.[0]?.name ||
+    product.product_categories?.[0]?.categories?.name ||
+    ""
+  );
+}
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+function SectionHeading({
+  eyebrow,
+  title,
+  action,
+  actionHref,
+  onAction,
+}) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <div>
+        {eyebrow && (
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400 md:text-xs">
+            {eyebrow}
+          </p>
+        )}
+
+        <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+          {title}
+        </h2>
+      </div>
+
+      {action &&
+        (actionHref ? (
+          <Link
+            to={actionHref}
+            className="shrink-0 text-xs font-semibold text-neutral-500 transition hover:text-black md:text-sm"
+          >
+            {action} →
+          </Link>
+        ) : (
+          <button
+            onClick={onAction}
+            className="shrink-0 text-xs font-semibold text-neutral-500 transition hover:text-black md:text-sm"
+          >
+            {action} →
+          </button>
+        ))}
+    </div>
+  );
+}
+

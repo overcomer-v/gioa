@@ -2,64 +2,62 @@ import { useState } from "react";
 import { supabase } from "../supabase";
 
 export function useAuthManager() {
-  const [loading, setLoading] = useState();
-  const [supabaseError, setError] = useState();
+  const [loading, setLoading] = useState(false);
+  const [supabaseError, setError] = useState(null);
 
-  // async function uploadTest(e) {
-  //   e.preventDefault();
-  //   const { data, error } = await supabase
-  //     .from("profiles")
-  //     .insert([
-  //       {
-  //         id: "4b30e619-a62d-495d-824e-b9eb3577f720",
-  //         name: "OluwaOpe",
-  //         role: "user",
-  //       },
-  //     ]);
+ async function signUp({ name, email, password }) {
+  setLoading(true);
+  setError(null);
 
-  //     if (error){
-  //       console.log(error);
-  //     }else{
-  //       console.log(data);
-  //     }
-  // }
+  try {
+    console.log("SIGNUP FUNCTION STARTED");
 
-  async function signUp({ name, email, password, onSuccess }) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+        },
+      },
+    });
+
+    console.log("SUPABASE SIGNUP RESPONSE:", data, error);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("SIGNUP ERROR:", error);
+    setError(error);
+    throw error;
+  } finally {
+    console.log("SIGNUP FINISHED");
+    setLoading(false);
+  }
+}
+
+  async function login({ email, password, onSuccess }) {
     setLoading(true);
+    setError(null);
+
     try {
-      const { data:{user}, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (error) {
         throw error;
-      } else {
-        console.log("SignUp successfull");
-        console.log(user);
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert([{ user_id: user.id, name: name, email: email }]);
-
-        if (insertError) {
-          console.log(insertError);
-          throw insertError;
-        }
-
-        const { error: rolesError } = await supabase.functions.invoke(
-          "register-role",
-          {
-            body: { name: "Functions" },
-          },
-        );
-
-        if (rolesError) {
-          console.log(rolesError);
-          throw rolesError;
-        }
-              onSuccess();
-
       }
 
+      console.log("Login successful:", data.user);
+
+      onSuccess?.(data.user);
     } catch (error) {
-      console.log("Error occured :", error);
+      console.error("Login error:", error);
       setError(error);
       throw error;
     } finally {
@@ -67,27 +65,30 @@ export function useAuthManager() {
     }
   }
 
-  async function login({ email, password , onSuccess}) {
+  async function logout() {
     setLoading(true);
+    setError(null);
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await supabase.auth.signOut();
+
       if (error) {
         throw error;
-      } else {
-        console.log("SignUp successfull");
       }
-
-      onSuccess();
     } catch (error) {
-      console.log("Error occured :", error);
+      console.error("Logout error:", error);
+      setError(error);
       throw error;
     } finally {
       setLoading(false);
     }
   }
 
-  return { loading, signUp, login, supabaseError };
+  return {
+    loading,
+    supabaseError,
+    signUp,
+    login,
+    logout,
+  };
 }

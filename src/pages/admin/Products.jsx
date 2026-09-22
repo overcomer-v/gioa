@@ -117,42 +117,72 @@ export function Products() {
     </div>
   );
 
-  function ProductsCard({ product }) {
-    return (
-      <div className="shadow-md  p-4 bg-white rounded-md">
+ function ProductsCard({ product }) {
+  const primaryImage =
+    product.images?.find((image) => image.is_primary)?.public_url ||
+    product.images?.[0]?.public_url;
+
+  const price = product.variants?.[0]?.price;
+  const stock = product.variants?.[0]?.stock_quantity;
+
+  console.log("Primary Image",primaryImage);
+  
+
+  return (
+    <div className="shadow-md p-4 bg-white rounded-md">
+      {primaryImage ? (
         <img
-          src={product.image_src}
-          className="object-cover mb-4 aspect-[1] w-full rounded-md"
-          alt=""
+          src={primaryImage}
+          className="object-cover mb-4 aspect-square w-full rounded-md"
+          alt={product.name}
         />
-        <p className="text-sm opacity-60 text-ellipsis line-clamp-1">
-          {product.category}
-        </p>
-        <h2 className="font-semibold overflow-hidden line-clamp-1">
-          {product.name}
-        </h2>
-        <div className="flex flex-col justify-between mt-4">
-          <span className="font-semibold">{`#${product.price}`}</span>
-          <span className="font-semibold opacity-60 text-sm text-admin_primary ">{` ${product.amount_in_stock} in stock`}</span>
+      ) : (
+        <div className="aspect-square w-full rounded-md bg-neutral-100 flex items-center justify-center">
+          <span className="text-sm opacity-50">No image</span>
         </div>
-        <div className="flex justify-between mt-4 gap-3 items-center">
-          <i
-            onClick={() => {
-              setOpenDeleteDialog(true);
-              setItemsDetails({ id: product.id, image_url: product.image_url });
-            }}
-            className="fa fa-trash text-neutral-900 text-sm rounded-sm shadow-md p-2"
-          ></i>
-          <i
-            onClick={() => {
-              navigate(`/product-editor/${product.id}`);
-            }}
-            className="fa fa-pen text-xs rounded-md shadow-md p-2"
-          ></i>
-        </div>
+      )}
+
+      <p className="text-sm opacity-60 text-ellipsis line-clamp-1">
+        {product.categories?.[0]?.name || "Uncategorized"}
+      </p>
+
+      <h2 className="font-semibold overflow-hidden line-clamp-1">
+        {product.name}
+      </h2>
+
+      <div className="flex flex-col justify-between mt-4">
+        <span className="font-semibold">
+          ₦{Number(price || 0).toLocaleString()}
+        </span>
+
+        <span className="font-semibold opacity-60 text-sm text-admin_primary">
+          {stock} in stock
+        </span>
       </div>
-    );
-  }
+
+      <div className="flex justify-between mt-4 gap-3 items-center">
+        <i
+          onClick={() => {
+            setOpenDeleteDialog(true);
+
+            setItemsDetails({
+              id: product.id,
+              images: product.images || [],
+            });
+          }}
+          className="fa fa-trash text-neutral-900 text-sm rounded-sm shadow-md p-2 cursor-pointer"
+        />
+
+        <i
+          onClick={() => {
+            navigate(`/product-editor/${product.id}`);
+          }}
+          className="fa fa-pen text-xs rounded-md shadow-md p-2 cursor-pointer"
+        />
+      </div>
+    </div>
+  );
+}
 
   function DeleteWarningDaialog({ onDelete, onCancel }) {
     const [openSpinner, setOpenSpinner] = useState();

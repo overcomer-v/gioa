@@ -5,6 +5,7 @@ import { Subtitle } from "../../components/Titles";
 import { UsersProductCard } from "../../components/Cards";
 import { Spinner } from "../../components/Spinners";
 import { generalPagePadding } from "../../utils/constants";
+import { getProductImage } from "../../utils/helpers";
 
 export function FeaturedProducts() {
   const { products, isProductLoading, fetchProducts, productCount } =
@@ -28,29 +29,32 @@ export function FeaturedProducts() {
         </div>
       ) : (
         <div className="grid items-center gap-3 no-scrollbar py-3  grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] mt-8 w-full">
-          {products.map((item, index) => (
+          {products.map((item) => (
             <UsersProductCard
-              key={index}
               id={item.id}
               label={item.name}
-              imageSrc={item.image_src}
-              price={`₦${item.price}`}
-              brand={item.brand}
-              category={item.category}
+              imageSrc={getProductImage(item)}
+              price={`₦${Number(
+                item.base_price || item.price || 0,
+              ).toLocaleString()}`}
+              brand={item.brands?.name || item.brand}
+              category={item.categories?.[0]?.name || item.category}
             />
           ))}
         </div>
       )}
 
-     { !isProductLoading && <div className="mt-10">
-        <PageNavigator
-          pageNo={pageNo}
-          maxPageNo={maxPageNo}
-          onPageChange={(e) => {
-            setPageNo(e);
-          }}
-        />
-      </div>}
+      {!isProductLoading && (
+        <div className="mt-10">
+          <PageNavigator
+            pageNo={pageNo}
+            maxPageNo={maxPageNo}
+            onPageChange={(e) => {
+              setPageNo(e);
+            }}
+          />
+        </div>
+      )}
     </section>
   );
 }

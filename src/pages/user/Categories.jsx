@@ -47,7 +47,7 @@ export function CategoriesViewer() {
                   navigate(`/group-opener/category/${category.name}`);
                 }}
               />
-              <CategoriesItemsView category={category.name} />
+              <CategoriesItemsView categoryId={category.id} />
             </div>
           ))}
       </div>

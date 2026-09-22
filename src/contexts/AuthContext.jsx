@@ -4,59 +4,97 @@ import { supabase } from "../supabase";
 const AuthContext = createContext();
 
 export function AuthContextProvider({ children }) {
-  const [user, setUser] = useState();
-  const [isAuthloading, setLoading] = useState();
-  const [role, setRole] = useState();
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+  const [isAuthloading, setLoading] = useState(true);
 
-  async function getRole(id) {
+  async function getRole(userId) {
     const { data, error } = await supabase
-      .from("roles")
+      .from("user_roles")
       .select("role")
-      .eq("id", id)
+      .eq("user_id", userId)
       .maybeSingle();
+
     if (error) {
-      console.log(error);
+      console.error("Error fetching role:", error);
+      return null;
     }
-    return data;
+
+    return data?.role ?? null;
+  }
+
+  async function loadUser(userInfo) {
+    if (!userInfo) {
+      setUser(null);
+      setRole(null);
+      return;
+    }
+
+    setUser(userInfo);
+
+
+    const userRole = await getRole(userInfo.id);
+
+    setRole(userRole);
+    console.log(userRole);
   }
 
   useEffect(() => {
-    const handleSessionFetch = (userInfo) => {
-      setLoading(true);
-      setUser(userInfo);
-      getRole(userInfo.id).then((result) => {
-        if (result) {
-          setRole(result?.role);
-          console.log(result?.role);
-          setLoading(false);
-        }
-      });
-    };
+    let mounted = true;
 
-    supabase.auth.getUser().then(({data}) => {
-      if (data.user) {
-        handleSessionFetch(data.user);
+    async function initializeAuth() {
+      setLoading(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) return;
+
+      await loadUser(user);
+
+      if (mounted) {
+        setLoading(false);
+      }
+    }
+
+    initializeAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        // Don't await Supabase calls directly inside the auth callback.
+        setTimeout(() => {
+          if (mounted) {
+            loadUser(session?.user);
+          }
+        }, 0);
+      }
+
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setRole(null);
+        setLoading(false);
       }
     });
 
-    const { data: authSubscriber } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_IN") {
-          handleSessionFetch(session?.user);
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
-          setLoading(false);
-        }
-      },
-    );
-
     return () => {
-      authSubscriber.subscription.unsubscribe();
+      mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthloading, role }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        isAuthloading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

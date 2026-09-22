@@ -6,7 +6,6 @@ import {
   Route,
   Routes,
   useLocation,
-  useNavigate,
 } from "react-router-dom";
 import { SignUpPage } from "./pages/auth/SignUp";
 import { AuthContextProvider, useAuth } from "./contexts/AuthContext";
@@ -25,7 +24,7 @@ import { GroupListOpener } from "./pages/user/GroupListOpener";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 import { ProductDetailsView } from "./pages/user/ProductDetailsView";
 import { FeaturedProducts } from "./pages/user/FeaturedProduct";
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -104,43 +103,41 @@ function UserRoutesParent() {
 }
 
 function AdminRoutesParent() {
-  const navigate = useNavigate();
   const { user, role, isAuthloading } = useAuth();
   const [openAdminNavbar, setOpenAdminNavBar] = useState(false);
 
-  useEffect(() => {
-    if (!user && isAuthloading === false) {
-      navigate("/");
-    }
-  }, [user, isAuthloading, navigate]);
+  if (isAuthloading) {
+    return (
+      <div className="w-screen h-[90vh] flex">
+        <div className="fas m-auto fa-spinner fa-spin text-5xl opacity-70" />
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    console.log(isAuthloading);
-  }, [isAuthloading]);
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-  return isAuthloading || !user || !role ? (
-    <div className="w-screen h-[90vh] flex">
-      <div className="fas m-auto fa-spinner fa-spin text-5xl opacity-70"></div>
-    </div>
-  ) : role != "admin" ? (
-    <Navigate to={"/"}></Navigate>
-  ) : (
+  if (role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
     <div className="flex relative items-start w-full">
-      <div className="">
+      <div>
         <AdminNavBar
           openAdminNavbar={openAdminNavbar}
           setOpenAdminNavbar={setOpenAdminNavBar}
-        ></AdminNavBar>
+        />
       </div>
 
       <div className="w-full md:ml-[250px]">
-        <AdminHeader onAdminNavBarOpen={setOpenAdminNavBar}></AdminHeader>
+        <AdminHeader onAdminNavBarOpen={setOpenAdminNavBar} />
+
         <div className="md:ml-16 mt-8">
-          <Outlet></Outlet>
+          <Outlet />
         </div>
       </div>
     </div>
   );
 }
-
-export default App;

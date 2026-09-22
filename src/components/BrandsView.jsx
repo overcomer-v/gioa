@@ -1,44 +1,63 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useProducts } from "../hooks/databaseManager/useProducts";
 import { Spinner } from "./Spinners";
-import { Link } from "react-router-dom";
 import { generalPagePadding } from "../utils/constants";
-import { Subtitle } from "./Titles";
+
 
 export function BrandsView() {
   const { getBrandNames } = useProducts();
-  const [brands, setBrands] = useState();
-
+  const [brands, setBrands] = useState([]);
   useEffect(() => {
     getBrandNames().then((results) => {
       setBrands(results);
     });
   }, []);
-
   return (
-    <div className={`md:mt-6 pt-3  ${generalPagePadding}  page-animation md:border-0 border-t-2 border-neutral-100`}>
-    <h2 className="md:mb-6 mb-3 font-semibold md:text-2xl text-xl text-primary">
-      Brands
-    </h2>
+    <section
+      className={` ${generalPagePadding} border-b border-neutral-200 bg-white py-4 page-animation `}
+    >
+      {" "}
+      <div className="flex items-center justify-between mb-3">
+        {" "}
+        <div>
+          {" "}
+          <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+            {" "}
+            Explore{" "}
+          </p>{" "}
+          <h2 className="mt-1 text-base md:text-lg font-semibold text-primary">
+            {" "}
+            Brands{" "}
+          </h2>{" "}
+        </div>{" "}
+        {brands?.length > 0 && (
+          <span className="text-xs text-neutral-400">
+            {" "}
+            {brands.length} brands{" "}
+          </span>
+        )}{" "}
+      </div>{" "}
       {brands ? (
-        <div
-          className={`flex flex-wrap gap-3 md:gap-4 pb-6 bg-white border-b-2 border-neutral-200 text-white max-60 overflow-y-scroll no-scrollbar`}
-        >
-          {brands.map((e) => (
+        <div className=" flex gap-2 overflow-x-auto pb-1 no-scrollbar ">
+          {" "}
+          {brands.map((brand) => (
             <Link
-              to={`/group-opener/brand/${e}`}
-              key={e}
-              className="rounded-full md:py-2 md:px-4 py-1 px-3 border-2 border-neutral-200 text-primary hover:bg-primary hover:text-white md:text-sm text-xs"
+              key={brand}
+              to={`/group-opener/brand/${brand}`}
+              className=" shrink-0 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs md:text-sm font-medium text-primary transition-all duration-200 hover:border-primary hover:bg-primary hover:text-white "
             >
-              {e}
+              {" "}
+              {brand}{" "}
             </Link>
-          ))}
+          ))}{" "}
         </div>
       ) : (
-        <div className=" flex w-full h-20 bg-white">
-          <Spinner size="text-xl opacity-60 m-auto text-neutral-500" />
+        <div className="flex h-10 items-center">
+          {" "}
+          <Spinner size="text-sm opacity-50 text-neutral-500" />{" "}
         </div>
-      )}
-    </div>
+      )}{" "}
+    </section>
   );
 }

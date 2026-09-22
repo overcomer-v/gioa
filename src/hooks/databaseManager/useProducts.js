@@ -3,301 +3,661 @@ import { supabase } from "../../supabase";
 
 export function useProducts() {
   const [products, setProducts] = useState([]);
-  const [isProductLoading, setIsProductLoading] = useState("");
-  const [productCount, setProductCount] = useState("");
+  const [isProductLoading, setIsProductLoading] = useState(false);
+  const [productCount, setProductCount] = useState(0);
 
-  const tableName = "products";
-  const storageName = "product_images";
+  const storageName = "product-images";
 
-  
-  async function uploadProduct(productInfo, productImage) {
-    const filePath = `${Date.now()}-${productImage.name}`;
-    if (productImage && productInfo) {
-      try {
-        setIsProductLoading(true);
-        const imageurl = await uploadProductImage(filePath, productImage);
-        await uploadProductInfo({ ...productInfo, image_url: imageurl.path });
-        console.log("product upload successfull");
-        return { success: true };
-      } catch (error) {
-        console.error(error);
-        alert(error);
-        return { success: false };
-      } finally {
-        setIsProductLoading(false);
+  // =========================================================
+  // CREATE PRODUCT
+  // =========================================================
+
+  async function uploadProduct(productInfo) {
+    setIsProductLoading(true);
+
+    try {
+      /*
+        productInfo will eventually look something like:
+
+        {
+          name,
+          slug,
+          description,
+          brand_id,
+          base_price,
+          status,
+          featured,
+
+          category_ids: [],
+
+          variants: [
+            {
+              sku,
+              price,
+              compare_at_price,
+              stock_quantity,
+              attributes
+            }
+          ],
+
+          images: [
+            {
+              file,
+              alt_text,
+              is_primary
+            }
+          ]
+        }
+      */
+
+      const {
+        name,
+        slug,
+        description,
+        brand_id,
+        base_price,
+        status,
+        featured,
+        category_ids = [],
+        variants = [],
+        images = [],
+      } = productInfo;
+
+      // -------------------------------------------------------
+      // 1. CREATE PRODUCT
+      // -------------------------------------------------------
+
+      const { data: product, error: productError } = await supabase
+        .from("products")
+        .insert({
+          name,
+          slug,
+          description,
+          brand_id: brand_id || null,
+          base_price: base_price || 0,
+          status: status || "active",
+          featured: featured || false,
+        })
+        .select()
+        .single();
+
+      if (productError) {
+        throw productError;
       }
-    } else if (productInfo) {
-      try {
-        setIsProductLoading(true);
-        await uploadProductInfo(productInfo);
-        return { success: true };
-      } catch (error) {
-        console.error(error);
-        alert(error);
-        return { success: false };
-      } finally {
-        setIsProductLoading(false);
+
+      const productId = product.id;
+
+      // -------------------------------------------------------
+      // 2. ASSIGN CATEGORIES
+      // -------------------------------------------------------
+
+      if (category_ids.length > 0) {
+        const categoryRows = category_ids.map((categoryId) => ({
+          product_id: productId,
+          category_id: categoryId,
+        }));
+
+        const { error: categoryError } = await supabase
+          .from("product_categories")
+          .insert(categoryRows);
+
+        if (categoryError) {
+          throw categoryError;
+        }
       }
+
+      // -------------------------------------------------------
+      // 3. CREATE VARIANTS
+      // -------------------------------------------------------
+
+      let createdVariants = [];
+
+      if (variants.length > 0) {
+        const variantRows = variants.map((variant) => ({
+          product_id: productId,
+          sku: variant.sku,
+          price: variant.price,
+          compare_at_price: variant.compare_at_price || null,
+          stock_quantity: variant.stock_quantity || 0,
+          attributes: variant.attributes || {},
+          is_active: variant.is_active ?? true,
+        }));
+
+        const { data, error: variantError } = await supabase
+          .from("product_variants")
+          .insert(variantRows)
+          .select();
+
+        if (variantError) {
+          throw variantError;
+        }
+
+        createdVariants = data;
+      }
+
+      // -------------------------------------------------------
+      // 4. UPLOAD IMAGES
+      // -------------------------------------------------------
+
+      if (images.length > 0) {
+        const imageRows = [];
+
+        for (let index = 0; index < images.length; index++) {
+          const image = images[index];
+
+          const extension = image.file.name.split(".").pop()?.toLowerCase();
+
+          const filePath = `products/${productId}/${crypto.randomUUID()}.${extension}`;
+
+          const { data: storageData, error: storageError } =
+            await supabase.storage
+              .from(storageName)
+              .upload(filePath, image.file);
+
+          if (storageError) {
+            throw storageError;
+          }
+
+          imageRows.push({
+            product_id: productId,
+            variant_id: image.variant_id || null,
+            image_url: storageData.path,
+            alt_text: image.alt_text || name,
+            sort_order: index,
+            is_primary: image.is_primary ?? index === 0,
+          });
+        }
+
+        const { error: imageError } = await supabase
+          .from("product_images")
+          .insert(imageRows);
+
+        if (imageError) {
+          throw imageError;
+        }
+      }
+
+      console.log("Product created successfully:", product);
+
+      return {
+        success: true,
+        product,
+        variants: createdVariants,
+      };
+    } catch (error) {
+      console.error("Product creation failed:", error);
+
+      return {
+        success: false,
+        error,
+      };
+    } finally {
+      setIsProductLoading(false);
     }
   }
 
-  async function uploadProductImage(filePath, productImage) {
-    const { data: storageData, error: storageError } = await supabase.storage
-      .from(storageName) // your bucket name
-      .upload(filePath, productImage);
-
-    if (storageError) {
-      throw storageError;
-    } else {
-      console.log("image-upload successfull");
-    }
-
-    return storageData;
-  }
-
-  async function uploadProductInfo(productInfo) {
-    const { data, error } = await supabase
-      .from(tableName)
-      .insert([productInfo]);
-
-    if (error) {
-      throw error;
-    } else {
-      console.log("upload successfull :", data);
-    }
-  }
+  // =========================================================
+  // FETCH PRODUCTS
+  // =========================================================
 
   async function fetchProducts(page = 1, limit = 15) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
+
     try {
       setIsProductLoading(true);
+
       const { data, error, count } = await supabase
-        .from(tableName)
-        .select("*", { count: "exact" })
+        .from("products")
+        .select(
+          `
+          *,
+          brands (
+            id,
+            name,
+            slug
+          ),
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            sort_order,
+            is_primary
+          ),
+          product_variants (
+            id,
+            sku,
+            price,
+            compare_at_price,
+            stock_quantity,
+            attributes,
+            is_active
+          ),
+          product_categories (
+            category_id,
+            categories (
+              id,
+              name,
+              slug
+            )
+          )
+        `,
+          { count: "exact" },
+        )
+        .order("created_at", { ascending: false })
         .range(from, to);
-
-      if (error) throw error;
-      console.log("Fetch successfull");
-
-      const mData = await Promise.allSettled(
-        data.map(async (e) => {
-          return { ...e, image_src: await getImagePublicURL(e.image_url) };
-        })
-      );
-      setProductCount(count);
-      setProducts(mData.map((e) => e.value));
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsProductLoading(false);
-    }
-  }
-
-  async function fetchCategories() {
-    try {
-      const { error, data } = await supabase.from("categories").select("*");
 
       if (error) {
         throw error;
       }
 
-      const items = Promise.allSettled(
-        data.map(async (e) => {
-          return { ...e, imageSrc: await getImagePublicURL(e.image_url) };
-        })
-      );
+      const formattedProducts = data.map((product) => ({
+        ...product,
 
-      return (await items).map((item) => item.value);
+        images: [...(product.product_images || [])]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((img) => ({
+            ...img,
+            public_url: supabase.storage
+              .from("product-images") // <-- your bucket name
+              .getPublicUrl(img.image_url).data.publicUrl,
+          })),
+
+        categories: (product.product_categories || []).map(
+          (item) => item.categories,
+        ),
+
+        variants: product.product_variants || [],
+      }));
+
+      setProductCount(count || 0);
+      setProducts(formattedProducts);
+
+      return formattedProducts;
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching products:", error);
+      throw error;
+    } finally {
+      setIsProductLoading(false);
+    }
+  }
+  // =========================================================
+  // FETCH CATEGORIES
+  // =========================================================
+
+  async function fetchCategories() {
+  try {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .order("name");
+
+    if (error) {
+      throw error;
+    }
+
+    const formattedCategories = data.map((category) => ({
+      ...category,
+      public_url: getCategoryImagePublicURL(category.image_url),
+    }));
+
+    return formattedCategories;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw error;
+  }
+}
+
+  // =========================================================
+  // FETCH BRANDS
+  // =========================================================
+
+  async function fetchBrands() {
+    try {
+      const { data, error } = await supabase
+        .from("brands")
+        .select("*")
+        .order("name");
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+      throw error;
     }
   }
 
-  // group here could means brand or categories or anyother group
-  async function fetchGroupItems(groupType, groupItem, page=1, limit=15) {
+  // =========================================================
+  // FETCH PRODUCT
+  // =========================================================
+
+  async function getProductItem(productId) {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          `
+            *,
+            brands (
+              id,
+              name,
+              slug
+            ),
+            product_images (
+              id,
+              image_url,
+              alt_text,
+              sort_order,
+              is_primary
+            ),
+            product_variants (
+              id,
+              sku,
+              price,
+              compare_at_price,
+              stock_quantity,
+              attributes,
+              is_active
+            ),
+            product_categories (
+              category_id,
+              categories (
+                id,
+                name,
+                slug
+              )
+            )
+          `,
+        )
+        .eq("id", productId)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return {
+        ...data,
+
+        public_images: [...(data.product_images || [])]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((img) => ({
+            ...img,
+            public_url: supabase.storage
+              .from("product-images") // <-- your bucket name
+              .getPublicUrl(img.image_url).data.publicUrl,
+          })),
+
+        images: [...(data.product_images || [])].sort(
+          (a, b) => a.sort_order - b.sort_order,
+        ),
+
+        categories: (data.product_categories || []).map(
+          (item) => item.categories,
+        ),
+
+        variants: data.product_variants || [],
+      };
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+  }
+
+  // =========================================================
+  // IMAGE URL
+  // =========================================================
+
+  function getImagePublicURL(imagePath) {
+    if (!imagePath) {
+      return null;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(storageName).getPublicUrl(imagePath);
+
+    return publicUrl;
+  }
+
+  function getCategoryImagePublicURL(imagePath) {
+  if (!imagePath) {
+    return null;
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage
+    .from("category-images")
+    .getPublicUrl(imagePath);
+
+  return publicUrl;
+}
+
+  // =========================================================
+  // UPDATE PRODUCT
+  // =========================================================
+
+  async function updateProductInfo(productId, product) {
+    const { error } = await supabase
+      .from("products")
+      .update(product)
+      .eq("id", productId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  }
+
+  // =========================================================
+  // DELETE PRODUCT
+  // =========================================================
+
+  async function deleteProduct(productId) {
+    try {
+      setIsProductLoading(true);
+
+      /*
+        Because product_categories, product_variants and
+        product_images have ON DELETE CASCADE, deleting the
+        product automatically deletes their database records.
+      */
+
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log("Product deleted successfully");
+
+      await fetchProducts();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      throw error;
+    } finally {
+      setIsProductLoading(false);
+    }
+  }
+
+  // =========================================================
+  // FETCH PRODUCTS BY BRAND
+  // =========================================================
+
+  async function fetchProductsByBrand(brandId, page = 1, limit = 15) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
     try {
       setIsProductLoading(true);
+
       const { data, error, count } = await supabase
-        .from(tableName)
-        .select("*", { count: "exact" })
-        .eq(groupType, groupItem)
+        .from("products")
+        .select(
+          `
+            *,
+            brands (
+              id,
+              name,
+              slug
+            ),
+            product_images (
+              id,
+              image_url,
+              alt_text,
+              sort_order,
+              is_primary
+            ),
+            product_variants (
+              id,
+              sku,
+              price,
+              stock_quantity,
+              attributes,
+              is_active
+            )
+          `,
+          { count: "exact" },
+        )
+        .eq("brand_id", brandId)
         .range(from, to);
 
       if (error) {
         throw error;
       }
 
-      const mData = await Promise.allSettled(
-        data.map(async (e) => {
-          return { ...e, image_src: await getImagePublicURL(e.image_url) };
-        })
-      );
+      const formattedProducts = data.map((product) => ({
+        ...product,
+        images: [...(product.product_images || [])].sort(
+          (a, b) => a.sort_order - b.sort_order,
+        ),
+      }));
 
-      console.log(mData.map((item) => item.value));
-      setProductCount(count);
-      return mData.map((item) => item.value);
+      setProductCount(count || 0);
+
+      return formattedProducts;
     } catch (error) {
       console.error(error);
-      throw error;
-    }finally{
-      setIsProductLoading(false);
-    }
-  }
-
-  async function getImagePublicURL(imagePath) {
-    if (imagePath) {
-      try {
-        const { data, error } = await supabase.storage
-          .from(storageName)
-          .createSignedUrl(imagePath, 60);
-
-        if (error) {
-          throw error;
-        }
-        // expires in 60 seconds
-        return data.signedUrl;
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  }
-
-  async function getProductItem(productId) {
-    try {
-      const { data, error } = await supabase
-        .from(tableName)
-        .select("*")
-        .eq("id", productId).single();
-      if (error) {
-        throw error;
-      } else {
-        return {
-          ...data,
-          image_src: await getImagePublicURL(data.image_url),
-        };
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async function updateProductItem(productId, product, imagePath, image) {
-    try {
-      setIsProductLoading(true);
-      if (image) {
-        const image_Path = await updateProductImage(imagePath, image);
-        await updateProductInfo(productId, {
-          ...product,
-          image_url: image_Path,
-        });
-      } else {
-        await updateProductInfo(productId, product);
-      }
-    } catch (error) {
-      console.log(error);
       throw error;
     } finally {
       setIsProductLoading(false);
     }
   }
 
- 
+  // =========================================================
+  // RETURN
+  // =========================================================
 
-  async function updateProductInfo(productId, product) {
-    const { error } = await supabase
-      .from(tableName)
-      .update(product)
-      .eq("id", productId);
+  // =========================================================
+  // FETCH PRODUCTS BY CATEGORY
+  // =========================================================
 
-    console.log("product info update successfull");
+  async function fetchProductsByCategory(categoryId, page = 1, limit = 15) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    if (error) {
-      throw error;
-    }
-  }
+    console.log("category ID",categoryId);
 
-  async function updateProductImage(imagePath, image) {
-    const filePath = `${Date.now()}-${image.name}`;
-
-    if (imagePath) {
-      const { error } = await supabase.storage
-        .from(storageName)
-        .remove([imagePath]);
-
-      if (error) {
-        throw error;
-      }
-    }
-
-    const { data, error } = await supabase.storage
-      .from(storageName)
-      .upload(filePath, image);
-
-    if (!error) {
-      console.log("successfull image update");
-      return data.path;
-    } else {
-      throw error;
-    }
-  }
-
-  async function deleteProduct(id, imagePath) {
     try {
-      const { error: databaseE } = await supabase
-        .from(tableName)
-        .delete()
-        .eq("id", id);
-      if (databaseE) {
-        throw databaseE;
-      } else {
-        console.log("Product info deleted");
-      }
+      setIsProductLoading(true);
 
-      const { error, data } = await supabase.storage
-        .from(storageName)
-        .remove([imagePath]);
+      const { data, error, count } = await supabase
+        .from("products")
+        .select(
+          `
+          *,
+          brands (
+            id,
+            name,
+            slug
+          ),
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            sort_order,
+            is_primary
+          ),
+          product_variants (
+            id,
+            sku,
+            price,
+            compare_at_price,
+            stock_quantity,
+            attributes,
+            is_active
+          ),
+          product_categories!inner (
+            category_id,
+            categories (
+              id,
+              name,
+              slug
+            )
+          )
+        `,
+          { count: "exact" },
+        )
+        .eq("product_categories.category_id", categoryId)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
       if (error) {
         throw error;
-      } else {
-        console.log("successfull image deleted:", data);
-        await fetchProducts();
-      }
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-
-  async function getBrandNames() {
-    try {
-      const { data, error } = await supabase.from(tableName).select("brand");
-      if (error) {
-        throw error;
       }
 
-      return [...new Set(data.map((data) => data.brand))];
+      const formattedProducts = data.map((product) => ({
+        ...product,
+
+        images: [...(product.product_images || [])]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((img) => ({
+            ...img,
+            public_url: supabase.storage
+              .from(storageName)
+              .getPublicUrl(img.image_url).data.publicUrl,
+          })),
+
+        categories: (product.product_categories || []).map(
+          (item) => item.categories,
+        ),
+
+        variants: product.product_variants || [],
+      }));
+
+      setProductCount(count || 0);
+
+      return formattedProducts;
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching products by category:", error);
       throw error;
+    } finally {
+      setIsProductLoading(false);
     }
   }
 
   return {
     uploadProduct,
     fetchProducts,
+    fetchCategories,
+    fetchBrands,
+    fetchProductsByBrand,
+    fetchProductsByCategory,
+    getProductItem,
+    getImagePublicURL,
+    updateProductInfo,
+    deleteProduct,
+
     isProductLoading,
     products,
-    getImagePublicURL,
-    deleteProduct,
-    getProductItem,
-    updateProductItem,
-    fetchCategories,
     productCount,
-    getBrandNames,
-    fetchGroupItems,
   };
 }

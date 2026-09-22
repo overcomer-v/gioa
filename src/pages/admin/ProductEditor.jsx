@@ -1,299 +1,660 @@
 import { useEffect, useRef, useState } from "react";
 import { useProducts } from "../../hooks/databaseManager/useProducts";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export function ProductEditor() {
   const imageInput = useRef();
-  const { productId } = useParams();
-  const { uploadProduct, isProductLoading, getProductItem, updateProductItem } =
-    useProducts();
-  const [openSDialog, setOpenSDialog] = useState();
-  const [productImage, setProductImage] = useState();
-  const [updateImage, setUpdateImage] = useState();
+
+  const {
+    uploadProduct,
+    isProductLoading,
+    fetchCategories,
+    fetchBrands,
+  } = useProducts();
+
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+
+  const [openSDialog, setOpenSDialog] = useState(false);
+  const [productImage, setProductImage] = useState(null);
+
   const [productInfo, setProductInfo] = useState({
     name: "",
     description: "",
-    specifications: {},
-    category: "",
+    brand_id: "",
+    category_ids: [],
+    base_price: "",
+    sku: "",
     price: "",
-    amount_in_stock: "",
-    brand: "",
+    compare_at_price: "",
+    stock_quantity: "",
+    specifications: {},
   });
+
+  const [newSpec, setNewSpec] = useState({
+    component: "",
+    specifications: "",
+  });
+
+  // ---------------------------------------------------------
+  // FETCH BRANDS AND CATEGORIES
+  // ---------------------------------------------------------
+
+  useEffect(() => {
+    async function loadOptions() {
+      try {
+        const [categoryData, brandData] = await Promise.all([
+          fetchCategories(),
+          fetchBrands(),
+        ]);
+
+        setCategories(categoryData || []);
+        setBrands(brandData || []);
+      } catch (error) {
+        console.error("Failed to load product options:", error);
+      }
+    }
+
+    loadOptions();
+  }, []);
+
+  // ---------------------------------------------------------
+  // BODY SCROLL
+  // ---------------------------------------------------------
 
   useEffect(() => {
     if (openSDialog) {
       document.body.style.overflow = "hidden";
-      document.body.style.height = "100vh";
     } else {
       document.body.style.overflow = "auto";
     }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [openSDialog]);
 
-  useEffect(() => {
-    if (productId) {
-      getProductItem(productId).then((res) => {
-        setProductInfo({
-          name: res.name,
-          description: res.description,
-          category: res.category,
-          price: res.price,
-          amount_in_stock: res.amount_in_stock,
-          brand: res.brand,
-          specifications:res.specifications ?? {},
-        });
-        setProductImage(res.image_src);
-        console.log(res.image_src);
-      });
-    }
-  }, []);
+  // ---------------------------------------------------------
+  // IMAGE
+  // ---------------------------------------------------------
 
-  const handleKeyDown = (e) => {
-    const text = productInfo.spec;
-    // When Enter is pressed, add a new bullet automatically
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const start = e.target.selectionStart;
-      const newText = text.slice(0, start) + "\n• " + text.slice(start);
-      setProductInfo((e) => {
-        return { ...e, spec: newText };
-      });
+  function getImagePreview() {
+    if (!productImage) return null;
 
-      // Move cursor after new bullet
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = start + 3;
-      }, 0);
+    return URL.createObjectURL(productImage);
+  }
+
+  // ---------------------------------------------------------
+  // CATEGORY
+  // ---------------------------------------------------------
+
+  function toggleCategory(categoryId) {
+    setProductInfo((prev) => {
+      const exists = prev.category_ids.includes(categoryId);
+
+      return {
+        ...prev,
+        category_ids: exists
+          ? prev.category_ids.filter((id) => id !== categoryId)
+          : [...prev.category_ids, categoryId],
+      };
+    });
+  }
+
+  // ---------------------------------------------------------
+  // SPECIFICATIONS
+  // ---------------------------------------------------------
+
+  function addSpecification(e) {
+    e.preventDefault();
+
+    if (!newSpec.component.trim() || !newSpec.specifications.trim()) {
+      return;
     }
-  };
-  function getImage() {
-    if (productId) {
-      if (updateImage) {
-        return URL.createObjectURL(updateImage);
-      } else {
-        return productImage;
+
+    setProductInfo((prev) => ({
+      ...prev,
+      specifications: {
+        ...prev.specifications,
+        [newSpec.component.trim()]:
+          newSpec.specifications.trim(),
+      },
+    }));
+
+    setNewSpec({
+      component: "",
+      specifications: "",
+    });
+  }
+
+  function removeSpecification(key) {
+    setProductInfo((prev) => {
+      const updated = { ...prev.specifications };
+
+      delete updated[key];
+
+      return {
+        ...prev,
+        specifications: updated,
+      };
+    });
+  }
+
+  // ---------------------------------------------------------
+  // SUBMIT
+  // ---------------------------------------------------------
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!productInfo.name.trim()) {
+      alert("Please enter a product name.");
+      return;
+    }
+
+    if (!productInfo.brand_id) {
+      alert("Please select a brand.");
+      return;
+    }
+
+    if (productInfo.category_ids.length === 0) {
+      alert("Please select at least one category.");
+      return;
+    }
+
+    if (!productInfo.sku.trim()) {
+      alert("Please enter a SKU.");
+      return;
+    }
+
+    if (!productInfo.price) {
+      alert("Please enter a product price.");
+      return;
+    }
+
+    if (!productImage) {
+      alert("Please select a product image.");
+      return;
+    }
+
+    const slug = productInfo.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    const productData = {
+      name: productInfo.name.trim(),
+
+      slug,
+
+      description: productInfo.description.trim(),
+
+      brand_id: productInfo.brand_id,
+
+      base_price: Number(productInfo.base_price || productInfo.price),
+
+      status: "active",
+
+      featured: false,
+
+      category_ids: productInfo.category_ids,
+
+      variants: [
+        {
+          sku: productInfo.sku.trim(),
+
+          price: Number(productInfo.price),
+
+          compare_at_price: productInfo.compare_at_price
+            ? Number(productInfo.compare_at_price)
+            : null,
+
+          stock_quantity: Number(
+            productInfo.stock_quantity || 0
+          ),
+
+          attributes: productInfo.specifications,
+
+          is_active: true,
+        },
+      ],
+
+      images: [
+        {
+          file: productImage,
+
+          alt_text: productInfo.name,
+
+          is_primary: true,
+
+          variant_id: null,
+        },
+      ],
+    };
+
+    try {
+      const result = await uploadProduct(productData);
+
+      if (!result.success) {
+        throw result.error;
       }
-    } else {
-      return URL.createObjectURL(productImage);
+
+      setOpenSDialog(true);
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to create product.");
     }
   }
+
+  // ---------------------------------------------------------
+  // RENDER
+  // ---------------------------------------------------------
 
   return (
     <main className="flex flex-col p-4">
       {openSDialog && <SuccessDialog />}
+
       <div className="flex items-center gap-3 mb-6">
         <span className="h-6 w-3 bg-primary-dark rounded-xl"></span>
-        <h2 className="text-2xl font-bold">Add New Product</h2>
+
+        <h2 className="text-2xl font-bold">
+          Add New Product
+        </h2>
       </div>
-      <div className="min-w-[200px] max-w-[700px] gap-12 items-end">
-        <input
-          type="file"
-          ref={imageInput}
-          className="hidden"
-          onChange={(e) => {
-            setProductImage(e.target.files[0]);
-            if (productId) {
-              setUpdateImage(e.target.files[0]);
-            }
-            console.log(e.target.files[0]);
-          }}
-        />
-        <form>
+
+      <form
+        onSubmit={handleSubmit}
+        className="min-w-[200px] max-w-[700px]"
+      >
+        {/* IMAGE */}
+
+        <div>
+          <input
+            type="file"
+            ref={imageInput}
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+
+              if (file) {
+                setProductImage(file);
+              }
+            }}
+          />
+
           {productImage ? (
             <img
-              onClick={(e) => {
-                e.preventDefault();
-                imageInput.current.click();
-              }}
-              src={getImage()}
-              alt=""
-              className="h-80 w-80 object-cover rounded-xl"
+              src={getImagePreview()}
+              alt="Product preview"
+              onClick={() => imageInput.current.click()}
+              className="h-80 w-80 object-cover rounded-xl cursor-pointer"
             />
           ) : (
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                imageInput.current.click();
-              }}
+              type="button"
+              onClick={() => imageInput.current.click()}
               className="flex bg-neutral-200 h-80 w-80 rounded-xl"
             >
               <i className="fa fa-plus m-auto opacity-50"></i>
             </button>
           )}
+        </div>
 
-          <label htmlFor="name" className="inline-block mt-12">
-            Product Name
-          </label>
-          <input
-            value={productInfo.name}
-            onChange={(edit) => {
-              setProductInfo((e) => {
-                return { ...e, name: edit.target.value };
-              });
-            }}
-            type="text"
-            id="name"
-            className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
-          />
-          <label htmlFor="desc" className="inline-block mt-8">
-            Product Description
-          </label>
-          <textarea
-            value={productInfo.description}
-            onChange={(edit) => {
-              setProductInfo((e) => {
-                return { ...e, description: edit.target.value };
-              });
-            }}
-            cols={6}
-            type="text"
-            id="desc"
-            className="py-2 px-3 w-full mt-3 mb-8 rounded-sm border-[1px] h-20 bg-transparent border-neutral-400"
-          />
+        {/* NAME */}
 
-          <label htmlFor="spec" className="inline-block mt-8">
-            Product Specifications
-          </label>
-          <SpecificationsUi
-            productSpecifications={productInfo.specifications}
-            setProductInfo={setProductInfo}
-          />
-          <label htmlFor="category">Category</label>
-          <select
-            value={productInfo.category}
-            onChange={(edit) => {
-              setProductInfo((e) => {
-                return { ...e, category: edit.target.value };
-              });
-            }}
-            id="category"
-            className="block mt-2 p-3 rounded-sm text-sm bg-neutral-50"
-          >
-            <option value="">----Select Category----</option>
+        <label
+          htmlFor="name"
+          className="inline-block mt-12"
+        >
+          Product Name
+        </label>
 
-            <option value="TV,Audio & Entertainment">
-              TV,Audio & Entertainment
+        <input
+          id="name"
+          value={productInfo.name}
+          onChange={(e) =>
+            setProductInfo((prev) => ({
+              ...prev,
+              name: e.target.value,
+            }))
+          }
+          type="text"
+          className="py-2 px-3 w-full mt-3 rounded-sm border bg-transparent border-neutral-400"
+        />
+
+        {/* DESCRIPTION */}
+
+        <label
+          htmlFor="description"
+          className="inline-block mt-8"
+        >
+          Product Description
+        </label>
+
+        <textarea
+          id="description"
+          value={productInfo.description}
+          onChange={(e) =>
+            setProductInfo((prev) => ({
+              ...prev,
+              description: e.target.value,
+            }))
+          }
+          className="py-2 px-3 w-full mt-3 mb-8 rounded-sm border h-24 bg-transparent border-neutral-400"
+        />
+
+        {/* BRAND */}
+
+        <label
+          htmlFor="brand"
+          className="inline-block mt-4"
+        >
+          Product Brand
+        </label>
+
+        <select
+          id="brand"
+          value={productInfo.brand_id}
+          onChange={(e) =>
+            setProductInfo((prev) => ({
+              ...prev,
+              brand_id: e.target.value,
+            }))
+          }
+          className="block mt-3 p-3 rounded-sm text-sm bg-neutral-50 border"
+        >
+          <option value="">
+            ---- Select Brand ----
+          </option>
+
+          {brands.map((brand) => (
+            <option
+              key={brand.id}
+              value={brand.id}
+            >
+              {brand.name}
             </option>
-            <option value="Home Appliances">Home Appliances</option>
-            <option value="Accessories & Essentials">
-              Accessories & Essentials
-            </option>
-            <option value="Laptops & Phones">Laptop & Phones</option>
-          </select>
+          ))}
+        </select>
 
-          <label htmlFor="brand" className="inline-block mt-8">
-            Product Brand
-          </label>
-          <input
-            value={productInfo.brand}
-            onChange={(edit) => {
-              setProductInfo((e) => {
-                return { ...e, brand: edit.target.value };
-              });
-            }}
-            type="text"
-            id="brand"
-            className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
-          />
+        {/* CATEGORIES */}
 
-          <label htmlFor="price" className="inline-block mt-8">
-            Product Price
-          </label>
-          <input
-            value={productInfo.price}
-            onChange={(edit) => {
-              setProductInfo((e) => {
-                return { ...e, price: edit.target.value };
-              });
-            }}
-            type="number"
-            id="price"
-            className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
-          />
-          <label htmlFor="availability" className="inline-block mt-12">
-            Amount In Stock
-          </label>
-          <input
-            value={productInfo.amount_in_stock}
-            onChange={(edit) => {
-              setProductInfo((e) => {
-                return { ...e, amount_in_stock: edit.target.value };
-              });
-            }}
-            type="number"
-            id="availability"
-            className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
-          />
+        <label className="inline-block mt-8">
+          Product Categories
+        </label>
+
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          {categories.map((category) => (
+            <label
+              key={category.id}
+              className="flex items-center gap-2 border rounded-md p-3 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={productInfo.category_ids.includes(
+                  category.id
+                )}
+                onChange={() =>
+                  toggleCategory(category.id)
+                }
+              />
+
+              <span>{category.name}</span>
+            </label>
+          ))}
+        </div>
+
+        {/* SKU */}
+
+        <label
+          htmlFor="sku"
+          className="inline-block mt-8"
+        >
+          SKU
+        </label>
+
+        <input
+          id="sku"
+          value={productInfo.sku}
+          onChange={(e) =>
+            setProductInfo((prev) => ({
+              ...prev,
+              sku: e.target.value,
+            }))
+          }
+          type="text"
+          placeholder="e.g. SAM-S24-128-BLK"
+          className="py-2 px-3 w-full mt-3 rounded-sm border bg-transparent border-neutral-400"
+        />
+
+        {/* PRICE */}
+
+        <label
+          htmlFor="price"
+          className="inline-block mt-8"
+        >
+          Product Price
+        </label>
+
+        <input
+          id="price"
+          value={productInfo.price}
+          onChange={(e) =>
+            setProductInfo((prev) => ({
+              ...prev,
+              price: e.target.value,
+            }))
+          }
+          type="number"
+          min="0"
+          step="0.01"
+          className="py-2 px-3 w-full mt-3 rounded-sm border bg-transparent border-neutral-400"
+        />
+
+        {/* COMPARE PRICE */}
+
+        <label
+          htmlFor="compare_at_price"
+          className="inline-block mt-8"
+        >
+          Previous Price
+        </label>
+
+        <input
+          id="compare_at_price"
+          value={productInfo.compare_at_price}
+          onChange={(e) =>
+            setProductInfo((prev) => ({
+              ...prev,
+              compare_at_price: e.target.value,
+            }))
+          }
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="Optional"
+          className="py-2 px-3 w-full mt-3 rounded-sm border bg-transparent border-neutral-400"
+        />
+
+        {/* STOCK */}
+
+        <label
+          htmlFor="stock"
+          className="inline-block mt-8"
+        >
+          Amount In Stock
+        </label>
+
+        <input
+          id="stock"
+          value={productInfo.stock_quantity}
+          onChange={(e) =>
+            setProductInfo((prev) => ({
+              ...prev,
+              stock_quantity: e.target.value,
+            }))
+          }
+          type="number"
+          min="0"
+          className="py-2 px-3 w-full mt-3 rounded-sm border bg-transparent border-neutral-400"
+        />
+
+        {/* SPECIFICATIONS */}
+
+        <label className="inline-block mt-8">
+          Product Specifications
+        </label>
+
+        <div className="my-4">
+          {Object.keys(productInfo.specifications).length >
+            0 && (
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {Object.entries(
+                productInfo.specifications
+              ).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="border p-2 rounded flex items-center text-nowrap text-ellipsis overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeSpecification(key)
+                    }
+                    className="mr-3 opacity-80"
+                  >
+                    <i className="fa fa-times"></i>
+                  </button>
+
+                  <strong>{key}</strong>
+
+                  <span className="mx-1">:</span>
+
+                  <span>{value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <h2>Component</h2>
+
+              <input
+                value={newSpec.component}
+                onChange={(e) =>
+                  setNewSpec((prev) => ({
+                    ...prev,
+                    component: e.target.value,
+                  }))
+                }
+                className="py-2 px-3 w-full mt-3 rounded-sm border bg-transparent border-neutral-400"
+              />
+            </div>
+
+            <div>
+              <h2>Specification</h2>
+
+              <input
+                value={newSpec.specifications}
+                onChange={(e) =>
+                  setNewSpec((prev) => ({
+                    ...prev,
+                    specifications: e.target.value,
+                  }))
+                }
+                className="py-2 px-3 w-full mt-3 rounded-sm border bg-transparent border-neutral-400"
+              />
+            </div>
+          </div>
 
           <button
-            onClick={async (e) => {
-              e.preventDefault();
-              if (productId) {
-                try {
-                  await updateProductItem(
-                    productId,
-                    productInfo,
-                    productInfo.image_url,
-                    updateImage
-                  );
-                  setOpenSDialog(true);
-                } catch (error) {
-                  alert(error);
-                }
-              } else {
-                const { success } = await uploadProduct(
-                  productInfo,
-                  productImage
-                );
-                if (success) {
-                  setOpenSDialog(true);
-                }
-              }
-            }}
-            className=" mt-6 py-3 px-3 flex items-center gap-2 rounded-lg text-sm bg-primary-dark float-right"
+            type="button"
+            onClick={addSpecification}
+            className="mt-6 py-3 px-3 rounded-lg text-sm bg-primary-dark"
           >
-            <p>{productId ? "Update Product":"Add Product"}</p>
-            <i
-              className={`fa ${
-                isProductLoading ? "fa-spinner fa-spin" : "fa-check"
-              }`}
-            ></i>
+            Add Specification
           </button>
-        </form>
-      </div>
+        </div>
+
+        {/* SUBMIT */}
+
+        <button
+          type="submit"
+          disabled={isProductLoading}
+          className="mt-8 py-3 px-4 flex items-center gap-2 rounded-lg text-sm bg-primary-dark disabled:opacity-50"
+        >
+          <p>
+            {isProductLoading
+              ? "Adding Product..."
+              : "Add Product"}
+          </p>
+
+          <i
+            className={`fa ${
+              isProductLoading
+                ? "fa-spinner fa-spin"
+                : "fa-check"
+            }`}
+          ></i>
+        </button>
+      </form>
     </main>
   );
 
   function SuccessDialog() {
+    function closeDialog() {
+      setOpenSDialog(false);
+
+      setProductInfo({
+        name: "",
+        description: "",
+        brand_id: "",
+        category_ids: [],
+        base_price: "",
+        sku: "",
+        price: "",
+        compare_at_price: "",
+        stock_quantity: "",
+        specifications: {},
+      });
+
+      setProductImage(null);
+    }
+
     return (
       <div
-        onClick={() => {
-          setOpenSDialog(false);
-          setProductInfo({
-            name: "",
-            description: "",
-            category: "",
-            price: "",
-            amount_in_stock: "",
-          });
-          setProductImage("");
-        }}
-        className="z-[1000] inset-0 fixed bg-neutral-950 bg-opacity-60 overflow-clip "
+        className="z-[1000] inset-0 fixed bg-neutral-950 bg-opacity-60"
+        onClick={closeDialog}
       >
         <div
-          className={`flex flex-col items-center gap-4 border-2 border-neutral-100 rounded-xl absolute left-[40%] top-[20%] bg-neutral-100 p-10`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-col items-center gap-4 border-2 border-neutral-100 rounded-xl absolute left-[40%] top-[20%] bg-neutral-100 p-10"
         >
           <i className="fa fa-check-circle text-4xl"></i>
-          <h2 className="text-2xl font-medium">Successfull !</h2>
+
+          <h2 className="text-2xl font-medium">
+            Successful!
+          </h2>
+
           <p className="text-xs opacity-70">
-            The product has being uploaded successfully
+            The product has been uploaded successfully.
           </p>
-          <button className="w-full py-3 bg-primary-dark rounded-md">
+
+          <button
+            onClick={closeDialog}
+            className="w-full py-3 bg-primary-dark rounded-md"
+          >
             Okay
           </button>
+
           <Link
-            to={"/admin-products"}
+            to="/admin-products"
             className="flex items-center gap-2 text-sm"
           >
-            <p className="textsm">Go to product page</p>
+            <p>Go to product page</p>
             <i className="fa fa-arrow-right"></i>
           </Link>
         </div>
@@ -301,88 +662,3 @@ export function ProductEditor() {
     );
   }
 }
-
-
-function SpecificationsUi({ productSpecifications = {}, setProductInfo }) {
-
-    
-    const [newSpec, setNewSpec] = useState({ component: "", specifications: "" });
-
-    useEffect(()=>{
-      console.log(productSpecifications);
-    },[productSpecifications]);
-
-    const addSpec = (e) => {
-      e.preventDefault();
-      if (!newSpec.component || !newSpec.specifications) return;
-
-      setProductInfo((prev) => ({
-        ...prev,
-        specifications: {
-          ...(prev.specifications || {}),
-          [newSpec.component]: newSpec.specifications,
-        },
-      }));
-      // Reset input
-      setNewSpec({ component: "", specifications: "" });
-    };
-
-    const removeSpec = (keyToRemove) => {
-  setProductInfo((prev) => {
-    const updatedSpecs = { ...prev.specifications };
-    delete updatedSpecs[keyToRemove]; // remove the key
-    return { ...prev, specifications: updatedSpecs };
-  });
-};
-
-
-    return (
-      <div className="my-4">
-        {/* Display current specifications */}
-        {Object.keys(productSpecifications).length > 0 && (
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            {Object.entries(productSpecifications).map(([key, value]) => (
-              <div key={key} className="border p-2 rounded flex items-center text-nowrap text-ellipsis overflow-hidden"> <i onClick={()=>{removeSpec(key)}} className="fa fa-times mr-3 opacity-80"></i>
-                <strong >{key}</strong> : {value}
-               
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <h2>Components</h2>
-            <input
-              type="text"
-              value={newSpec.component}
-              onChange={(e) => {
-                setNewSpec((prev) => {
-                  return { ...prev, component: e.target.value };
-                });
-              }}
-              className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
-            />
-          </div>
-          <div>
-            <h2>Specifications</h2>
-            <input
-              value={newSpec.specifications}
-              onChange={(e) => {
-                setNewSpec((prev) => {
-                  return { ...prev, specifications: e.target.value };
-                });
-              }}
-              type="text"
-              className="py-2 px-3 w-full mt-3 rounded-sm border-[1px] bg-transparent border-neutral-400"
-            />
-          </div>
-        </div>
-        <button
-          onClick={addSpec}
-          className="mt-6 py-3 px-3 flex items-center gap-2 rounded-lg text-sm bg-primary-dark float-right"
-        >
-          Add Specification
-        </button>
-      </div>
-    );
-  }
