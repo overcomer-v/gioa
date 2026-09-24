@@ -24,6 +24,9 @@ import { GroupListOpener } from "./pages/user/GroupListOpener";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 import { ProductDetailsView } from "./pages/user/ProductDetailsView";
 import { FeaturedProducts } from "./pages/user/FeaturedProduct";
+import { ProductQueryPage } from "./pages/user/QueryPage";
+import Cart from "./pages/user/Cart";
+import Checkout from "./pages/user/Checkout";
 export default function App() {
   return (
     <BrowserRouter>
@@ -48,10 +51,17 @@ export default function App() {
           ></Route>
         </Route>
         <Route element={<UserRoutesParent />}>
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/shop" element={<ProductQueryPage />}></Route>
+
           <Route path="/" element={<UserHomePage />}></Route>
           <Route
             path="/featured-products"
             element={<FeaturedProducts />}
+          ></Route>
+            <Route
+            path="/checkout"
+            element={<Checkout />}
           ></Route>
 
           <Route
@@ -60,7 +70,7 @@ export default function App() {
           ></Route>
 
           <Route
-            path="/group-opener/:type/:typeItem"
+            path="/group-opener/:type/:id"
             element={<GroupListOpener />}
           ></Route>
 

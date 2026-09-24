@@ -285,28 +285,165 @@ export function useProducts() {
   // FETCH CATEGORIES
   // =========================================================
 
-  async function fetchCategories() {
-  try {
-    const { data, error } = await supabase
-      .from("categories")
-      .select("*")
-      .order("name");
 
-    if (error) {
-      throw error;
+ function escapePostgrestValue(value) {
+  // Escapes characters that carry special meaning inside a PostgREST
+  // filter string ( , ( ) % ) so search input can't break the filter
+  // or smuggle in an extra `or()` condition.
+  return value.replace(/[%,()]/g, (char) => `\\${char}`);
+}
+
+async function queryProducts(
+  {
+    search = "",
+    category = "",
+    brand = "",
+    minPrice = "",
+    maxPrice = "",
+    sort = "relevance",
+    page = 1,
+    limit = 15,
+  },
+  { signal } = {},
+) {
+  const safePage = Math.max(1, Number(page) || 1);
+  const from = (safePage - 1) * limit;
+  const to = from + limit - 1;
+
+  try {
+    let query = supabase
+      .from("products")
+      .select(
+        `
+        *,
+        brands!inner (
+          id,
+          name,
+          slug
+        ),
+        product_images (
+          id,
+          image_url,
+          alt_text,
+          sort_order,
+          is_primary
+        ),
+        product_variants (
+          id,
+          sku,
+          price,
+          compare_at_price,
+          stock_quantity,
+          attributes,
+          is_active
+        ),
+        product_categories!inner (
+          category_id,
+          categories!inner (
+            id,
+            name,
+            slug
+          )
+        )
+        `,
+        { count: "exact" },
+      )
+      .eq("status", "active");
+
+    // SEARCH
+    const trimmedSearch = search.trim();
+    if (trimmedSearch) {
+      const safeSearch = escapePostgrestValue(trimmedSearch);
+      query = query.or(
+        `name.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`,
+      );
     }
 
-    const formattedCategories = data.map((category) => ({
-      ...category,
-      public_url: getCategoryImagePublicURL(category.image_url),
+    // BRAND / CATEGORY — !inner above makes these actually restrict rows
+    if (brand) {
+      query = query.eq("brands.slug", brand);
+    }
+    if (category) {
+      query = query.eq("product_categories.categories.slug", category);
+    }
+
+    // PRICE RANGE
+    if (minPrice) {
+      query = query.gte("base_price", Number(minPrice));
+    }
+    if (maxPrice) {
+      query = query.lte("base_price", Number(maxPrice));
+    }
+
+    // SORT
+    if (sort === "price-asc") {
+      query = query.order("base_price", { ascending: true });
+    } else if (sort === "price-desc") {
+      query = query.order("base_price", { ascending: false });
+    } else {
+      query = query.order("created_at", { ascending: false });
+    }
+
+    // PAGINATION
+    query = query.range(from, to);
+
+    if (signal) {
+      query = query.abortSignal(signal);
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+
+    const formattedProducts = data.map((product) => ({
+      ...product,
+      images: [...(product.product_images || [])]
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map((img) => ({
+          ...img,
+          public_url: supabase.storage
+            .from("product-images")
+            .getPublicUrl(img.image_url).data.publicUrl,
+        })),
+      categories: (product.product_categories || []).map(
+        (item) => item.categories,
+      ),
+      variants: product.product_variants || [],
     }));
 
-    return formattedCategories;
+    return {
+      products: formattedProducts,
+      count: count || 0,
+    };
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    if (error.name !== "AbortError") {
+      console.error("Error querying products:", error);
+    }
     throw error;
   }
 }
+
+  async function fetchCategories() {
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name");
+
+      if (error) {
+        throw error;
+      }
+
+      const formattedCategories = data.map((category) => ({
+        ...category,
+        public_url: getCategoryImagePublicURL(category.image_url),
+      }));
+
+      return formattedCategories;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      throw error;
+    }
+  }
 
   // =========================================================
   // FETCH BRANDS
@@ -424,18 +561,16 @@ export function useProducts() {
   }
 
   function getCategoryImagePublicURL(imagePath) {
-  if (!imagePath) {
-    return null;
+    if (!imagePath) {
+      return null;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("category-images").getPublicUrl(imagePath);
+
+    return publicUrl;
   }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage
-    .from("category-images")
-    .getPublicUrl(imagePath);
-
-  return publicUrl;
-}
 
   // =========================================================
   // UPDATE PRODUCT
@@ -536,11 +671,18 @@ export function useProducts() {
 
       const formattedProducts = data.map((product) => ({
         ...product,
-        images: [...(product.product_images || [])].sort(
-          (a, b) => a.sort_order - b.sort_order,
-        ),
-      }));
 
+        images: [...(product.product_images || [])]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((img) => ({
+            ...img,
+            public_url: supabase.storage
+              .from(storageName)
+              .getPublicUrl(img.image_url).data.publicUrl,
+          })),
+
+        variants: product.product_variants || [],
+      }));
       setProductCount(count || 0);
 
       return formattedProducts;
@@ -564,7 +706,7 @@ export function useProducts() {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    console.log("category ID",categoryId);
+    console.log("category ID", categoryId);
 
     try {
       setIsProductLoading(true);
@@ -649,6 +791,7 @@ export function useProducts() {
     fetchProducts,
     fetchCategories,
     fetchBrands,
+    queryProducts,
     fetchProductsByBrand,
     fetchProductsByCategory,
     getProductItem,

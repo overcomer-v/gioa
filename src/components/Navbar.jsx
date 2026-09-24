@@ -117,7 +117,7 @@ export function UserNavBar({ setShowBrands, showBrands }) {
 
       <NavItems label="Categories" iconData="fa-sort" to="/categories" />
 
-      <NavItems label="Featured" iconData="fa-box" to="/featured-products" />
+      <NavItems label="Featured" iconData="fa-box" to="/shop" />
 
       <button
         type="button"
@@ -214,7 +214,7 @@ export function UserMobileNavBar({
         <NavItems
           label={"Featured"}
           iconData={"fa-box"}
-          to={"/featured-products"}
+          to={"/shop"}
         />
         <div
           className={`${showBrands && "border-[2px] border-neutral-100 rounded-xl"}`}

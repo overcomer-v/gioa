@@ -163,7 +163,7 @@ function TopCategoriesSection({ categories = [] }) {
         {categories.slice(0, 6).map((category) => (
           <Link
             key={category.id}
-            to={`/group-opener/category/${category.name}`}
+            to={`/group-opener/category/${category.id}`}
             className="group relative h-40 overflow-hidden rounded-2xl bg-neutral-100 md:h-48"
           >
             {category.image_url ? (

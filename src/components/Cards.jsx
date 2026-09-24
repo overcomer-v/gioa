@@ -15,7 +15,7 @@ export function UsersProductCard({
       to={`/product-details/${id}`}
       className="
         group flex flex-col h-full
-        bg-white rounded-2xl overflow-hidden
+        bg-white rounded-lg overflow-hidden
         border border-neutral-200
         transition-all duration-300
         hover:-translate-y-1 hover:shadow-lg

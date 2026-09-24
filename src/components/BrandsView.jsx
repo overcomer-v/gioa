@@ -6,10 +6,10 @@ import { generalPagePadding } from "../utils/constants";
 
 
 export function BrandsView() {
-  const { getBrandNames } = useProducts();
+  const { fetchBrands } = useProducts();
   const [brands, setBrands] = useState([]);
   useEffect(() => {
-    getBrandNames().then((results) => {
+    fetchBrands().then((results) => {
       setBrands(results);
     });
   }, []);
@@ -43,12 +43,12 @@ export function BrandsView() {
           {" "}
           {brands.map((brand) => (
             <Link
-              key={brand}
-              to={`/group-opener/brand/${brand}`}
+              key={brand.id}
+              to={`/group-opener/brand/${brand.id}`}
               className=" shrink-0 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs md:text-sm font-medium text-primary transition-all duration-200 hover:border-primary hover:bg-primary hover:text-white "
             >
               {" "}
-              {brand}{" "}
+              {brand.name}{" "}
             </Link>
           ))}{" "}
         </div>
