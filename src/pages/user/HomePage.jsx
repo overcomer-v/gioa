@@ -362,7 +362,7 @@ function CategoriesPreview() {
             eyebrow="Collection"
             title={category.name}
             action="Shop more"
-            onAction={() => navigate(`/group-opener/category/${category.name}`)}
+            onAction={() => navigate(`/group-opener/category/${category.id}`)}
           />
 
           <CategoriesItemsView categoryId={category.id} />
