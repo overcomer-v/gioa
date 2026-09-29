@@ -27,6 +27,7 @@ import { FeaturedProducts } from "./pages/user/FeaturedProduct";
 import { ProductQueryPage } from "./pages/user/QueryPage";
 import Cart from "./pages/user/Cart";
 import Checkout from "./pages/user/Checkout";
+import Orders from "./pages/user/Orders";
 export default function App() {
   return (
     <BrowserRouter>
@@ -62,6 +63,10 @@ export default function App() {
             <Route
             path="/checkout"
             element={<Checkout />}
+          ></Route>
+          <Route
+            path="/orders/:orderId"
+            element={<Orders />}
           ></Route>
 
           <Route

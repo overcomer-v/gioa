@@ -60,7 +60,12 @@ export default function Checkout() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [orderResult, setOrderResult] = useState(null);
+
+  // Set once create_order_from_cart succeeds. From that point on the
+  // cart is already emptied and the order already exists in Supabase,
+  // so if starting payment fails we retry payment on THIS order rather
+  // than resubmitting the form.
+  const [pendingOrder, setPendingOrder] = useState(null);
 
 
   const shippingFee = 0;
@@ -74,6 +79,25 @@ export default function Checkout() {
       ...previous,
       [name]: value,
     }));
+  }
+
+
+  // Asks the initialize-payment edge function for a Paystack checkout
+  // URL for this order, then sends the browser there.
+  async function goToPayment(orderId) {
+    const { data, error } = await supabase.functions.invoke(
+      "initialize-payment",
+      { body: { order_id: orderId } }
+    );
+
+    if (error || !data?.authorization_url) {
+      throw new Error(
+        error?.message ||
+          "We created your order but couldn't start payment. Please try again below."
+      );
+    }
+
+    window.location.href = data.authorization_url;
   }
 
 
@@ -104,7 +128,7 @@ export default function Checkout() {
       setIsSubmitting(true);
 
       const { data, error } = await supabase.rpc(
-        "create_order_from_cart",
+        "place_order",
         {
           p_shipping_name: form.name,
           p_shipping_phone: form.phone,
@@ -124,7 +148,11 @@ export default function Checkout() {
         );
       }
 
-      setOrderResult(data);
+      // Order exists now — remember it before touching payment, so a
+      // failure below still leaves us able to retry payment on it.
+      setPendingOrder(data);
+
+      await goToPayment(data.order_id);
 
     } catch (error) {
       console.error("Checkout error:", error);
@@ -139,30 +167,54 @@ export default function Checkout() {
   }
 
 
-  if (orderResult) {
+  async function handleRetryPayment() {
+    if (!pendingOrder) return;
+
+    setErrorMessage("");
+
+    try {
+      setIsSubmitting(true);
+      await goToPayment(pendingOrder.order_id);
+    } catch (error) {
+      console.error("Retry payment error:", error);
+      setErrorMessage(
+        error?.message || "Could not start payment. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+
+  // Order has been created — either we're mid-redirect to Paystack, or
+  // that redirect failed and the customer needs to retry.
+  if (pendingOrder) {
     return (
       <main className="min-h-[90vh] bg-neutral-50 px-4 py-12">
         <div className="mx-auto max-w-xl">
           <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
 
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
-              <CheckCircle2
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+              <CreditCard
                 size={34}
-                className="text-green-600"
+                className="text-neutral-700"
               />
             </div>
 
-            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-green-600">
-              Order placed
+            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-neutral-500">
+              Order created
             </p>
 
             <h1 className="text-2xl font-semibold text-neutral-900">
-              Thank you for your order
+              {isSubmitting
+                ? "Redirecting you to payment..."
+                : "Complete your payment"}
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-neutral-500">
-              Your order has been received. This is a demo
-              checkout, so no payment has been taken.
+              {isSubmitting
+                ? "Hang on while we take you to Paystack."
+                : "Your order is saved and waiting — finish payment to confirm it."}
             </p>
 
             <div className="mt-7 rounded-xl bg-neutral-50 p-5">
@@ -171,7 +223,7 @@ export default function Checkout() {
               </p>
 
               <p className="mt-1 text-lg font-semibold text-neutral-900">
-                {orderResult.order_number}
+                {pendingOrder.order_number}
               </p>
 
               <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4 text-sm">
@@ -181,29 +233,49 @@ export default function Checkout() {
 
                 <span className="font-semibold text-neutral-900">
                   {formatCurrency(
-                    Number(orderResult.total_amount)
+                    Number(pendingOrder.total_amount)
                   )}
                 </span>
               </div>
             </div>
 
+            {errorMessage && (
+              <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-700">
+                {errorMessage}
+              </div>
+            )}
+
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
-                onClick={() => navigate("/")}
-                className="flex-1 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-800"
+                onClick={handleRetryPayment}
+                disabled={isSubmitting}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Continue shopping
+                {isSubmitting ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Redirecting...
+                  </>
+                ) : (
+                  "Pay now"
+                )}
               </button>
 
               <button
                 type="button"
-                onClick={() => navigate("/shop")}
-                className="flex-1 rounded-xl border border-neutral-300 px-5 py-3 text-sm font-medium text-neutral-900 transition hover:bg-neutral-50"
+                onClick={() => navigate("/")}
+                disabled={isSubmitting}
+                className="flex-1 rounded-xl border border-neutral-300 px-5 py-3 text-sm font-medium text-neutral-900 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Browse products
+                Pay later
               </button>
             </div>
+
+            <p className="mt-4 text-xs text-neutral-400">
+              This order is held for 30 minutes. If payment isn't
+              completed in that time, it's automatically cancelled.
+            </p>
 
           </div>
         </div>
@@ -438,7 +510,7 @@ export default function Checkout() {
               </section>
 
 
-              {/* Demo payment information */}
+              {/* Payment information */}
               <section className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-7">
 
                 <div className="flex items-start gap-4">
@@ -453,9 +525,9 @@ export default function Checkout() {
                     </h2>
 
                     <p className="mt-1 text-sm leading-6 text-neutral-500">
-                      Payment integration hasn't been added yet.
-                      This checkout will create a demo order
-                      without charging you.
+                      You'll be redirected to Paystack to complete
+                      payment securely. Your order is held for 30
+                      minutes while you pay.
                     </p>
 
                     <div className="mt-4 rounded-xl bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
@@ -647,15 +719,14 @@ export default function Checkout() {
                     ) : (
                       <>
                         <ShoppingBag size={17} />
-                        Place order
+                        Proceed to payment
                       </>
                     )}
                   </button>
 
 
                   <p className="mt-3 text-center text-xs leading-5 text-neutral-400">
-                    This is a demo checkout. You won't be
-                    charged for this order.
+                    You'll be redirected to Paystack to pay securely.
                   </p>
 
                 </div>
