@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         primary: "#000000",
+        secondary:"rgb(171,192,34)",
         primary_dark: "#000000",
         admin_primary: "rgb(37,22,54)"
       },

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { useProducts } from "../../hooks/databaseManager/useProducts";
 import { useCart } from "../../hooks/databaseManager/useCarts";
@@ -9,6 +9,7 @@ import { GoToCategories } from "../../components/ButtonLinks";
 import { CategoriesItemsView } from "../../components/CategoriesItemsView";
 import { Subtitle } from "../../components/Titles";
 import { generalPagePadding } from "../../utils/constants";
+import { toast } from "sonner";
 
 export function ProductDetailsView() {
   const { productId } = useParams();
@@ -22,6 +23,7 @@ export function ProductDetailsView() {
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // URLs that failed to load in the browser (404, 400, blocked, etc.).
   // Anything in here is treated as if it didn't exist.
@@ -237,23 +239,33 @@ export function ProductDetailsView() {
   ============================================================ */
 
   async function handleAddToCart() {
-    if (!selectedVariant?.id || isOutOfStock || isAddingToCart) {
-      return;
-    }
+  if (!selectedVariant?.id || isOutOfStock || isAddingToCart) {
+    return;
+  }
 
-    try {
-      setIsAddingToCart(true);
+  try {
+    setIsAddingToCart(true);
 
-      await addToCart(selectedVariant.id, quantity);
+    await addToCart(selectedVariant.id, quantity);
 
-      alert("Product added to cart successfully");
-    } catch (error) {
-      console.error("Failed to add product to cart:", error);
+    toast.success("Added to cart", {
+      description: `${productItem.name} has been added to your cart.`,
+      action: {
+        label: "View Cart",
+        onClick: () => {
+          navigate("/cart")
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Failed to add product to cart:", error);
 
-      alert("Failed to add product to cart");
-    } finally {
-      setIsAddingToCart(false);
-    }
+    toast.error("Failed to add to cart", {
+      description: "Something went wrong. Please try again.",
+    });
+  } finally {
+    setIsAddingToCart(false);
+  }
   }
 
   return (
@@ -533,14 +545,14 @@ export function ProductDetailsView() {
                   {isAddingToCart ? "Adding..." : "Add to Cart"}
                 </button>
 
-                <button
+                {/* <button
                   type="button"
                   disabled={isOutOfStock}
                   className="h-12 px-7 rounded-full border border-neutral-300 font-medium flex items-center justify-center gap-2 hover:bg-neutral-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Buy Now
                   <i className="fa fa-arrow-right text-sm" />
-                </button>
+                </button> */}
               </div>
             </div>
 

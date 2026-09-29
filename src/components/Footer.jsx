@@ -1,9 +1,13 @@
 import { Link } from "react-router-dom";
+
 import { generalPagePadding } from "../utils/constants";
 
 export function Footer() {
   return (
     <footer className="mt-20 bg-neutral-950 text-white">
+      {/* Accent line */}
+      <div className="h-1 bg-secondary" />
+
       {/* Main footer */}
       <div className={`${generalPagePadding} py-14 md:py-20`}>
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
@@ -11,58 +15,50 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link
               to="/"
-              className="text-3xl font-bold tracking-tight"
+              className="inline-flex items-center text-3xl font-bold tracking-tight"
             >
-              Gioa.
+              Gioa<span className="text-secondary">.</span>
             </Link>
 
             <p className="mt-5 max-w-md text-sm leading-6 text-neutral-400">
-              Quality electronics for the way you live, work and
-              connect. Discover products from trusted brands,
-              carefully selected for everyday use.
+              Quality electronics for the way you live, work and connect.
+              Discover products from trusted brands, carefully selected for
+              everyday use.
             </p>
 
             {/* Email */}
             <a
               href="mailto:atoyejeovercomer2@gmail.com"
-              className="mt-6 inline-block text-sm text-neutral-300 transition hover:text-white"
+              className="mt-6 inline-block text-sm text-neutral-300 transition hover:text-secondary"
             >
               atoyejeovercomer2@gmail.com
             </a>
 
             {/* Socials */}
             <div className="mt-7 flex items-center gap-3">
-              <a
+              <SocialLink
                 href="#"
-                aria-label="Facebook"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-sm text-neutral-400 transition hover:border-white/30 hover:text-white"
-              >
-                <i className="fab fa-facebook-f" />
-              </a>
+                label="Facebook"
+                icon="fab fa-facebook-f"
+              />
 
-              <a
+              <SocialLink
                 href="#"
-                aria-label="Google"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-sm text-neutral-400 transition hover:border-white/30 hover:text-white"
-              >
-                <i className="fab fa-google" />
-              </a>
+                label="Google"
+                icon="fab fa-google"
+              />
 
-              <a
+              <SocialLink
                 href="#"
-                aria-label="WhatsApp"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-sm text-neutral-400 transition hover:border-white/30 hover:text-white"
-              >
-                <i className="fab fa-whatsapp" />
-              </a>
+                label="WhatsApp"
+                icon="fab fa-whatsapp"
+              />
             </div>
           </div>
 
           {/* Shop */}
           <div>
-            <h3 className="text-sm font-semibold">
-              Shop
-            </h3>
+            <FooterHeading>Shop</FooterHeading>
 
             <div className="mt-5 flex flex-col gap-3">
               <FooterLink to="/products">
@@ -85,9 +81,7 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold">
-              Company
-            </h3>
+            <FooterHeading>Company</FooterHeading>
 
             <div className="mt-5 flex flex-col gap-3">
               <FooterLink to="/about">
@@ -119,12 +113,27 @@ export function Footer() {
             © {new Date().getFullYear()} Gioa. All rights reserved.
           </span>
 
-          <span>
-            Built for better everyday tech.
+          <span className="text-neutral-600">
+            Built for <span className="text-secondary">better</span> everyday
+            tech.
           </span>
         </div>
       </div>
     </footer>
+  );
+}
+
+/* =========================================================
+   FOOTER HEADING
+========================================================= */
+
+function FooterHeading({ children }) {
+  return (
+    <h3 className="relative w-fit text-sm font-semibold">
+      {children}
+
+      <span className="absolute -bottom-2 left-0 h-0.5 w-5 rounded-full bg-secondary" />
+    </h3>
   );
 }
 
@@ -136,9 +145,25 @@ function FooterLink({ to, children }) {
   return (
     <Link
       to={to}
-      className="w-fit text-sm text-neutral-400 transition hover:text-white"
+      className="w-fit text-sm text-neutral-400 transition hover:translate-x-1 hover:text-secondary"
     >
       {children}
     </Link>
+  );
+}
+
+/* =========================================================
+   SOCIAL LINK
+========================================================= */
+
+function SocialLink({ href, label, icon }) {
+  return (
+    <a
+      href={href}
+      aria-label={label}
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm text-neutral-400 transition hover:border-secondary hover:bg-secondary hover:text-black"
+    >
+      <i className={icon} />
+    </a>
   );
 }

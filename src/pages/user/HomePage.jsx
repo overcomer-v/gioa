@@ -32,7 +32,9 @@ export function UserHomePage() {
       {/* Hero */}
       <HeroSection />
 
-      <div className={`${generalPagePadding} flex flex-col gap-16 md:gap-24 mt-16`}>
+      <div
+        className={`${generalPagePadding} flex flex-col gap-16 md:gap-24 mt-16`}
+      >
         {/* Popular categories */}
         <TopCategoriesSection categories={categories} />
 
@@ -82,48 +84,68 @@ function CategoryNavigation({ categories }) {
 
 function HeroSection() {
   return (
-    <section className="relative h-[430px] overflow-hidden md:h-[620px]">
+    <section className="relative min-h-[500px] overflow-hidden md:min-h-[650px]">
+      {/* Background image */}
       <img
         src="/images/pxfuel.jpg"
         alt="Latest electronics"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover object-center"
       />
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50" />
+      {/* Layered overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
 
       {/* Content */}
       <div
-        className={`${generalPagePadding} relative z-10 flex h-full items-center`}
+        className={`${generalPagePadding} relative z-10 flex min-h-[500px] items-end pb-16 md:min-h-[650px] md:pb-24`}
       >
         <div className="max-w-2xl text-white">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-white/70 md:text-sm">
-            Discover what&apos;s next
-          </p>
+          {/* Eyebrow */}
+          <div className="mb-5 flex items-center gap-3">
+            <span className="h-px w-8 bg-white/70" />
+            <p className="text-xs font-medium uppercase tracking-[0.3em] text-white/70">
+              Discover what&apos;s next
+            </p>
+          </div>
 
-          <h1 className="text-4xl font-bold leading-[1.05] tracking-tight md:text-7xl">
-            Upgrade your world with better tech.
+          {/* Heading */}
+          <h1 className="max-w-xl text-4xl font-semibold leading-[1.02] tracking-[-0.03em] sm:text-5xl md:text-7xl">
+            Better tech.
+            <br />
+            Better everyday.
           </h1>
 
-          <p className="mt-5 max-w-lg text-sm leading-6 text-white/75 md:text-base">
-            Explore quality electronics from trusted brands, built for work,
-            entertainment and everyday life.
+          {/* Description */}
+          <p className="mt-6 max-w-lg text-sm leading-6 text-white/70 md:text-base">
+            Discover quality electronics from trusted brands, carefully selected
+            for work, entertainment and everyday life.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          {/* Actions */}
+          <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
-              to="/group-opener/category/Headphones & Earbuds"
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-neutral-200"
+              to="/shop"
+              className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-neutral-200"
             >
-              Shop now
+              Shop electronics
             </Link>
 
             <Link
               to="/categories"
-              className="rounded-full border border-white/50 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="text-sm font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition hover:text-white hover:decoration-white"
             >
               Explore categories
             </Link>
+          </div>
+
+          {/* Small trust/detail row */}
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-white/50">
+            <span>Trusted brands</span>
+            <span className="h-1 w-1 rounded-full bg-white/30" />
+            <span>Quality electronics</span>
+            <span className="h-1 w-1 rounded-full bg-white/30" />
+            <span>Built for everyday life</span>
           </div>
         </div>
       </div>
@@ -139,10 +161,7 @@ function TopCategoriesSection({ categories = [] }) {
   if (categories.length === 0) {
     return (
       <section>
-        <SectionHeading
-          eyebrow="Explore"
-          title="Shop by category"
-        />
+        <SectionHeading eyebrow="Explore" title="Shop by category" />
 
         <div className="flex h-48 items-center justify-center">
           <Spinner size="text-3xl" />
@@ -153,11 +172,7 @@ function TopCategoriesSection({ categories = [] }) {
 
   return (
     <section className="">
-      <SectionHeading
-        eyebrow="Explore"
-        title="Shop by category"
-
-      />
+      <SectionHeading eyebrow="Explore" title="Shop by category" />
 
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
         {categories.slice(0, 6).map((category) => (
@@ -202,8 +217,7 @@ function NewArrivals({ products = [] }) {
   const sortedProducts = useMemo(() => {
     return [...products].sort(
       (a, b) =>
-        new Date(b.created_at).getTime() -
-        new Date(a.created_at).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
   }, [products]);
 
@@ -219,12 +233,9 @@ function NewArrivals({ products = [] }) {
 
       const { scrollLeft, scrollWidth, clientWidth } = container;
 
-      const isAtEnd =
-        scrollLeft + clientWidth >= scrollWidth - 5;
+      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 5;
 
-      const scrollDistance = isMobile
-        ? clientWidth
-        : 500;
+      const scrollDistance = isMobile ? clientWidth : 500;
 
       if (isAtEnd) {
         container.scrollTo({
@@ -265,10 +276,7 @@ function NewArrivals({ products = [] }) {
           className="mt-6 flex gap-4 overflow-x-auto pb-4 no-scrollbar"
         >
           {sortedProducts.slice(0, 15).map((product) => (
-            <ProductCardWrapper
-              key={product.id}
-              product={product}
-            />
+            <ProductCardWrapper key={product.id} product={product} />
           ))}
         </div>
       )}
@@ -293,8 +301,8 @@ function PromoBanner() {
         </h2>
 
         <p className="mt-4 max-w-md text-sm leading-6 text-white/60 md:text-base">
-          From portable audio to smart devices and everyday essentials,
-          find products made to keep up with you.
+          From portable audio to smart devices and everyday essentials, find
+          products made to keep up with you.
         </p>
 
         <Link
@@ -354,11 +362,7 @@ function CategoriesPreview() {
             eyebrow="Collection"
             title={category.name}
             action="Shop more"
-            onAction={() =>
-              navigate(
-                `/group-opener/category/${category.name}`
-              )
-            }
+            onAction={() => navigate(`/group-opener/category/${category.name}`)}
           />
 
           <CategoriesItemsView categoryId={category.id} />
@@ -377,20 +381,14 @@ function MoreToLike({ products = [] }) {
 
   return (
     <section>
-      <SectionHeading
-        eyebrow="You may also like"
-        title="More to explore"
-      />
+      <SectionHeading eyebrow="You may also like" title="More to explore" />
 
       <div
         ref={scrollRef}
         className="mt-6 flex gap-4 overflow-x-auto pb-4 no-scrollbar"
       >
         {products.slice(0, 6).map((product) => (
-          <div
-            key={product.id}
-            className="w-[85vw] shrink-0 md:w-[440px]"
-          >
+          <div key={product.id} className="w-[85vw] shrink-0 md:w-[440px]">
             <SecondaryProductCard
               id={product.id}
               label={product.name}
@@ -417,7 +415,7 @@ function ProductCardWrapper({ product }) {
         label={product.name}
         imageSrc={getProductImage(product)}
         price={`₦${Number(
-          product.base_price || getProductPrice(product)
+          product.base_price || getProductPrice(product),
         ).toLocaleString()}`}
         category={getProductCategory(product)}
         brand={product.brands?.name}
@@ -430,12 +428,9 @@ function ProductCardWrapper({ product }) {
    HELPERS
 ========================================================= */
 
-
 function getProductPrice(product) {
   return (
-    product.product_variants?.find(
-      (variant) => variant.is_active
-    )?.price || 0
+    product.product_variants?.find((variant) => variant.is_active)?.price || 0
   );
 }
 
@@ -451,13 +446,7 @@ function getProductCategory(product) {
    SECTION HEADING
 ========================================================= */
 
-function SectionHeading({
-  eyebrow,
-  title,
-  action,
-  actionHref,
-  onAction,
-}) {
+function SectionHeading({ eyebrow, title, action, actionHref, onAction }) {
   return (
     <div className="flex items-end justify-between gap-4">
       <div>
@@ -478,17 +467,16 @@ function SectionHeading({
             to={actionHref}
             className="shrink-0 text-xs font-semibold text-neutral-500 transition hover:text-black md:text-sm"
           >
-            {action} →
+            {action}
           </Link>
         ) : (
           <button
             onClick={onAction}
             className="shrink-0 text-xs font-semibold text-neutral-500 transition hover:text-black md:text-sm"
           >
-            {action} →
+            {action} 
           </button>
         ))}
     </div>
   );
 }
-

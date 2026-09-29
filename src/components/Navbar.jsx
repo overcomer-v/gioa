@@ -165,7 +165,7 @@ export function UserNavBar({ setShowBrands, showBrands }) {
 
       <NavItems label="Contact" iconData="fa-phone" to="/contact" />
 
-      <NavItems label="About" iconData="fa-bullseye" to="/about" />
+      <NavItems label="About" iconData="fa-bullseye" to="/aboutus" />
     </nav>
   );
 }
@@ -230,7 +230,7 @@ export function UserMobileNavBar({
           ></NavItems>
         </div>
         <NavItems label={"Contact Us"} iconData={"fa-phone"} to={"/b"} />
-        <NavItems label={"About Us"} iconData={"fa-bullseye"} to={"/a"} />
+        <NavItems label={"About Us"} iconData={"fa-bullseye"} to={"/aboutus"} />
       </nav>
 
       {/* Dark overlay on the right */}

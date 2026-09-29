@@ -28,9 +28,12 @@ import { ProductQueryPage } from "./pages/user/QueryPage";
 import Cart from "./pages/user/Cart";
 import Checkout from "./pages/user/Checkout";
 import Orders from "./pages/user/Orders";
+import AboutUs from "./pages/user/AboutUs";
+import { Toaster } from "sonner";
 export default function App() {
   return (
     <BrowserRouter>
+    <Toaster position="top-right"/>
       <Routes>
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/login" element={<LoginPage></LoginPage>}></Route>
@@ -63,6 +66,10 @@ export default function App() {
             <Route
             path="/checkout"
             element={<Checkout />}
+          ></Route>
+           <Route
+            path="/aboutus"
+            element={<AboutUs />}
           ></Route>
           <Route
             path="/orders/:orderId"
