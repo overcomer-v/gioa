@@ -10,12 +10,14 @@ import { CategoriesItemsView } from "../../components/CategoriesItemsView";
 import { Subtitle } from "../../components/Titles";
 import { generalPagePadding } from "../../utils/constants";
 import { toast } from "sonner";
+import { useAuth } from "../../contexts/AuthContext";
 
 export function ProductDetailsView() {
   const { productId } = useParams();
 
   const { getProductItem } = useProducts();
   const { addToCart } = useCart();
+  const {user} = useAuth();
 
   const [productItem, setProductItem] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -239,6 +241,18 @@ export function ProductDetailsView() {
   ============================================================ */
 
   async function handleAddToCart() {
+  if (!user) {
+    toast.error("Sign in required", {
+      description: "Please sign in to add products to your cart.",
+      action: {
+        label: "Sign In",
+        onClick: () => navigate("/login"),
+      },
+    });
+
+    return;
+  }
+
   if (!selectedVariant?.id || isOutOfStock || isAddingToCart) {
     return;
   }
@@ -252,9 +266,7 @@ export function ProductDetailsView() {
       description: `${productItem.name} has been added to your cart.`,
       action: {
         label: "View Cart",
-        onClick: () => {
-          navigate("/cart")
-        },
+        onClick: () => navigate("/cart"),
       },
     });
   } catch (error) {
@@ -266,8 +278,7 @@ export function ProductDetailsView() {
   } finally {
     setIsAddingToCart(false);
   }
-  }
-
+}
   return (
     <section className={`${generalPagePadding} w-full`}>
       <div className="max-w-7xl mx-auto pt-5 pb-20">
